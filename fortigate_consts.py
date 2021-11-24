@@ -1,6 +1,6 @@
 # File: fortigate_consts.py
 #
-# Copyright (c) 2016-2020 Splunk Inc.
+# Copyright (c) 2016-2021 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ FORTIGATE_BLOCKED_IPS = "/monitor/user/banned/select/"
 FORTIGATE_LIST_POLICIES = "/cmdb/firewall/policy/"
 FORTIGATE_JSON_USERNAME = "username"
 FORTIGATE_JSON_PASSWORD = "password"
+FORTIGATE_JSON_API_KEY = "api_key"
 FORTIGATE_JSON_URL = "url"
 FORTIGATE_JSON_VDOM = "vdom"
 FORTIGATE_JSON_VERIFY_SERVER_CERT = "verify_server_cert"
@@ -61,6 +62,7 @@ FORTIGATE_ERR_API_UNSUPPORTED_METHOD = "Unsupported method"
 FORTIGATE_ERR_SERVER_CONNECTION = "Connection failed"
 FORTIGATE_ERR_FROM_SERVER = 'API failed. Status code: {status}. Detail: {detail}'
 FORTIGATE_ERR_JSON_PARSE = 'Unable to parse the fields parameter into a dictionary. Response text - {raw_text}. Error Code: {error_code}. Error Message: {error_msg}'
+FORTIGATE_ERR_REQUIRED_CONFIG_PARAMS = 'Please provide either password or api_key in the config for authentication'
 FORTIGATE_REST_RESP_OTHER_ERROR_MSG = "Unknown error"
 FORTIGATE_IP_BLOCKED = 'IP blocked successfully'
 FORTIGATE_IP_UNBLOCKED = 'IP unblocked successfully'

@@ -1,6 +1,6 @@
 # File: fortigate_connector.py
 #
-# Copyright (c) 2016-2020 Splunk Inc.
+# Copyright (c) 2016-2021 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ class FortiGateConnector(BaseConnector):
         super(FortiGateConnector, self).__init__()
         self._api_username = None
         self._api_password = None
+        self._api_key = None
         self._api_vdom = None
         self._device = None
         self._verify_server_cert = False
@@ -75,12 +76,17 @@ class FortiGateConnector(BaseConnector):
             return self.set_status(phantom.APP_ERROR, "Error occurred while getting the Phantom server's Python major version.")
 
         self._api_username = self._handle_py_ver_compat_for_input_str(self._python_version, config[FORTIGATE_JSON_USERNAME])
-        self._api_password = config[FORTIGATE_JSON_PASSWORD]
+        self._api_password = config.get(FORTIGATE_JSON_PASSWORD)
+        self._api_key = config.get(FORTIGATE_JSON_API_KEY)
         self._api_vdom = config.get(FORTIGATE_JSON_VDOM, '')
         self._verify_server_cert = config.get(FORTIGATE_JSON_VERIFY_SERVER_CERT, False)
         self.set_validator('ip', self._is_ip)
 
         self._device = self._handle_py_ver_compat_for_input_str(self._python_version, config[FORTIGATE_JSON_URL])
+
+        # Either password or API Key must be provided
+        if not self._api_password and not self._api_key:
+            return self.set_status(phantom.APP_ERROR, FORTIGATE_ERR_REQUIRED_CONFIG_PARAMS)
 
         # removing single occurence of trailing back-slash or forward-slash
         if self._device.endswith('/'):
@@ -296,10 +302,17 @@ class FortiGateConnector(BaseConnector):
         host = self._device
         rest_res = None
 
+        if self._api_key:
+            if params:
+                params.update({"access_token": self._api_key})
+            else:
+                params = dict()
+                params.update({"access_token": self._api_key})
+
         # get, post or put, whatever the caller asked us to use,
         # if not specified the default will be 'get'
         try:
-            request_func = getattr(self._sess_obj, method)
+            request_func = getattr(self._sess_obj, method) if self._api_password else getattr(requests, method)
         except:
             self.debug_print(FORTIGATE_ERR_API_UNSUPPORTED_METHOD.format(method=method))
             # set the action_result status to error, the handler function
@@ -387,10 +400,11 @@ class FortiGateConnector(BaseConnector):
         # create summary object
         summary_data = action_result.update_summary({})
 
-        # Initiating login session
-        ret_val = self._login(action_result)
-        if phantom.is_fail(ret_val):
-            return action_result.get_status()
+        if self._api_password:
+            # Initiating login session
+            ret_val = self._login(action_result)
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
 
         # create paginator parameters
         param = dict()
@@ -424,20 +438,21 @@ class FortiGateConnector(BaseConnector):
         self.save_progress(FORTIGATE_TEST_CONNECTIVITY_MSG)
         self.save_progress("Configured URL: {}".format(self._device))
 
-        ret_val = self._login(action_result)
+        if self._api_password:
+            ret_val = self._login(action_result)
 
-        if phantom.is_fail(ret_val):
-            # self.save_progress("Test Connectivity Failed")
-            self.save_progress(action_result.get_message())
-            # return action_result.get_status()
+            if phantom.is_fail(ret_val):
+                # self.save_progress("Test Connectivity Failed")
+                self.save_progress(action_result.get_message())
+                # return action_result.get_status()
 
-            # If SSL is enabled and URL configuration has IP address
-            if self._verify_server_cert and (phantom.is_ip(self._device) or self._is_ipv6(self._device)):
-                # The failure could be due to IP provided in URL instead of hostname
-                self.save_progress(FORTIGATE_TEST_WARN_MSG)
+                # If SSL is enabled and URL configuration has IP address
+                if self._verify_server_cert and (phantom.is_ip(self._device) or self._is_ipv6(self._device)):
+                    # The failure could be due to IP provided in URL instead of hostname
+                    self.save_progress(FORTIGATE_TEST_WARN_MSG)
 
-            self.set_status(phantom.APP_ERROR, FORTIGATE_TEST_CONN_FAIL)
-            return action_result.get_status()
+                self.set_status(phantom.APP_ERROR, FORTIGATE_TEST_CONN_FAIL)
+                return action_result.get_status()
 
         self.save_progress(FORTIGATE_TEST_ENDPOINT_MSG)
 
@@ -446,6 +461,12 @@ class FortiGateConnector(BaseConnector):
 
         if phantom.is_fail(status):
             self.save_progress(action_result.get_message())
+
+            # If SSL is enabled and URL configuration has IP address
+            if self._api_key and self._verify_server_cert and (phantom.is_ip(self._device) or self._is_ipv6(self._device)):
+                # The failure could be due to IP provided in URL instead of hostname
+                self.save_progress(FORTIGATE_TEST_WARN_MSG)
+
             self.set_status(phantom.APP_ERROR, FORTIGATE_TEST_CONN_FAIL)
             return action_result.get_status()
 
@@ -457,12 +478,13 @@ class FortiGateConnector(BaseConnector):
 
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        # Initiating login session
-        ret_val = self._login(action_result)
+        if self._api_password:
+            # Initiating login session
+            ret_val = self._login(action_result)
 
-        # Something went wrong
-        if phantom.is_fail(ret_val):
-            return action_result.get_status()
+            # Something went wrong
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
 
         # To get parameters
         try:
@@ -529,11 +551,12 @@ class FortiGateConnector(BaseConnector):
 
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        # Initiating login session
-        ret_val = self._login(action_result)
+        if self._api_password:
+            # Initiating login session
+            ret_val = self._login(action_result)
 
-        if phantom.is_fail(ret_val):
-            return action_result.get_status()
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
 
         # To get parameters
         try:
@@ -815,7 +838,10 @@ class FortiGateConnector(BaseConnector):
         multiple handle_action function calls and create any summary if required. Another usage is cleanup, disconnect
         from remote devices etc.
         """
-        return self._logout()
+
+        # Logout if it's password based authentication
+        if self._api_password:
+            return self._logout()
 
 
 if __name__ == '__main__':
