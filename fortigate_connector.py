@@ -14,21 +14,20 @@
 # and limitations under the License.
 #
 #
-# Phantom imports
-import phantom.app as phantom
-from phantom.base_connector import BaseConnector
-from phantom.action_result import ActionResult
-
-# Local imports
-from fortigate_consts import *
-
-import requests
 import json
-import sys
 import re
 import socket
 import struct
+import sys
+
+import phantom.app as phantom
+import requests
 from bs4 import UnicodeDammit
+from phantom.action_result import ActionResult
+from phantom.base_connector import BaseConnector
+
+# Local imports
+from fortigate_consts import *
 
 
 class FortiGateConnector(BaseConnector):
