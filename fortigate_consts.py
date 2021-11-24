@@ -61,7 +61,8 @@ FORTIGATE_REST_RESP_SUCCESS = 200
 FORTIGATE_ERR_API_UNSUPPORTED_METHOD = "Unsupported method"
 FORTIGATE_ERR_SERVER_CONNECTION = "Connection failed"
 FORTIGATE_ERR_FROM_SERVER = 'API failed. Status code: {status}. Detail: {detail}'
-FORTIGATE_ERR_JSON_PARSE = 'Unable to parse the fields parameter into a dictionary. Response text - {raw_text}. Error Code: {error_code}. Error Message: {error_msg}'
+FORTIGATE_ERR_JSON_PARSE = 'Unable to parse the fields parameter into a dictionary. ' \
+    'Response text - {raw_text}. Error Code: {error_code}. Error Message: {error_msg}'
 FORTIGATE_ERR_REQUIRED_CONFIG_PARAMS = 'Please provide either password or api_key in the config for authentication'
 FORTIGATE_REST_RESP_OTHER_ERROR_MSG = "Unknown error"
 FORTIGATE_IP_BLOCKED = 'IP blocked successfully'
@@ -73,4 +74,5 @@ FORTIGATE_INVALID_POLICY_DENY = 'Invalid policy. Action of policy is not deny'
 FORTIGATE_ADDRESS_NOT_AVAILABLE = 'Address does not exist'
 FORTIGATE_IP_ALREADY_UNBLOCKED = 'IP is already unblocked'
 FORTIGATE_IP_ALREADY_BLOCKED = 'IP is already blocked'
-FORTIGATE_X_CSRFTOKEN_ERROR = "Error occurred while fetching X-CSRFTOKEN from session object. Please check the provided credentials in the asset configuration parameters"
+FORTIGATE_X_CSRFTOKEN_ERROR = "Error occurred while fetching X-CSRFTOKEN from session object. ' \
+'Please check the provided credentials in the asset configuration parameters"

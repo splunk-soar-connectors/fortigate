@@ -143,7 +143,8 @@ class FortiGateConnector(BaseConnector):
         try:
             error_msg = self._handle_py_ver_compat_for_input_str(self._python_version, error_msg)
         except TypeError:
-            error_msg = "Error occurred while connecting to the Fortigate server. Please check the asset configuration and|or the action parameters."
+            error_msg = "Error occurred while connecting to the Fortigate server. " \
+                "Please check the asset configuration and|or the action parameters."
         except:
             error_msg = "Error message unavailable. Please check the asset configuration and|or action parameters."
 
@@ -200,8 +201,9 @@ class FortiGateConnector(BaseConnector):
             ip, net_size, net_mask = self._break_ip_addr(ip_addr.strip())
         except Exception as e:
             error_code, error_msg = self._get_error_message_from_exception(e)
-            self.debug_print("Validation for ip_addr failed. Error Code:{0}. Error Message:{1}. For valid IP formats, please refer to the action's documentation.".format(
-                                error_code, error_msg))
+            self.debug_print("Validation for ip_addr failed. Error Code:{0}. Error Message:{1}. "
+                             "For valid IP formats, please refer to the action's documentation.".format(
+                                 error_code, error_msg))
             return False
 
         # Validate ip address
@@ -326,8 +328,9 @@ class FortiGateConnector(BaseConnector):
                 url = "{0}{1}".format(host, endpoint)
         except Exception as e:
             error_code, error_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_ERROR, "Please check the asset configuration and action parameters. Error Code: {0}. Error Message: {1}".format(
-                error_code, error_msg)), None
+            return action_result.set_status(phantom.APP_ERROR, "Please check the asset configuration and action parameters. "
+                                            "Error Code: {0}. Error Message: {1}".format(
+                                                error_code, error_msg)), None
 
         # Make the call
         try:
@@ -361,7 +364,8 @@ class FortiGateConnector(BaseConnector):
                     rest_res = response.json()
                 except Exception as e:
                     error_code, error_msg = self._get_error_message_from_exception(e)
-                    msg_string = FORTIGATE_ERR_JSON_PARSE.format(raw_text=response.text, error_code=error_code, error_msg=error_msg)
+                    msg_string = FORTIGATE_ERR_JSON_PARSE.format(
+                        raw_text=response.text, error_code=error_code, error_msg=error_msg)
                     # set the action_result status to error, the handler function
                     # will most probably return as is
                     return action_result.set_status(phantom.APP_ERROR, msg_string), rest_res
@@ -491,7 +495,8 @@ class FortiGateConnector(BaseConnector):
             ip_addr_obj_name, policy_name, address_create_params, block_params, vdom = self._get_params(param)
         except Exception as e:
             error_code, error_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_SUCCESS, "Unable to create request parameters. Error Code:{0}. Error Message:{1}".format(error_code, error_msg))
+            return action_result.set_status(phantom.APP_SUCCESS, "Unable to create request parameters. Error Code:{0}. "
+                                            "Error Message:{1}".format(error_code, error_msg))
 
         # Check if address exist
         addr_status, addr_availability = self._is_address_available(ip_addr_obj_name, vdom, action_result)
@@ -509,10 +514,11 @@ class FortiGateConnector(BaseConnector):
 
             # Create Address Entry Phantom Addr {ip}
             add_addr_status, _ = self._make_rest_call(FORTIGATE_ADD_ADDRESS, action_result,
-                                                                      data=json.dumps(address_create_params), method="post", params=param)
+                                                      data=json.dumps(address_create_params), method="post", params=param)
             # Something went wrong
             if phantom.is_fail(add_addr_status):
-                return action_result.set_status(phantom.APP_ERROR, "Unable to create Address object. {0}".format(action_result.get_message()))
+                return action_result.set_status(phantom.APP_ERROR, "Unable to create Address object. {0}"
+                                                .format(action_result.get_message()))
 
         # To get policy id from policy name
         ret_val, policy_id = self._get_policy_id(policy_name, vdom, action_result)
@@ -563,7 +569,8 @@ class FortiGateConnector(BaseConnector):
             ip_addr_obj_name, policy_name, _, _, vdom = self._get_params(param)
         except Exception as e:
             error_code, error_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_SUCCESS, "Unable to create request parameters. Error Code:{0}. Error Message:{1}".format(error_code, error_msg))
+            return action_result.set_status(phantom.APP_SUCCESS, "Unable to create request parameters. Error Code:{0}. "
+                                            "Error Message:{1}".format(error_code, error_msg))
 
         # To get policy id from policy name
         ret_val, policy_id = self._get_policy_id(policy_name, vdom, action_result)
@@ -590,7 +597,8 @@ class FortiGateConnector(BaseConnector):
             param = None
 
         # Check if address entry is configured in destination of policy
-        dstaddr_status, dstaddr_resp = self._make_rest_call(FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id, ip=ip_addr_obj_name), action_result, params=param)
+        dstaddr_status, dstaddr_resp = self._make_rest_call(FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id,
+                            ip=ip_addr_obj_name), action_result, params=param)
 
         if phantom.is_fail(dstaddr_status):
             return action_result.get_status()
@@ -608,7 +616,8 @@ class FortiGateConnector(BaseConnector):
             param = None
 
         # Unblock an IP
-        status, _ = self._make_rest_call(FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id, ip=ip_addr_obj_name), action_result, method="delete", params=param)
+        status, _ = self._make_rest_call(FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id, ip=ip_addr_obj_name),
+                                         action_result, method="delete", params=param)
 
         if phantom.is_fail(status):
             return action_result.get_status()
@@ -730,7 +739,8 @@ class FortiGateConnector(BaseConnector):
 
         policy_id = policy.get('policyid')
         if not policy_id:
-            return action_result.set_status(phantom.APP_ERROR, "Unable to find policy ID for given policy name under virtual domain {}".format(vdom)), None
+            return action_result.set_status(phantom.APP_ERROR, "Unable to find policy ID for given policy name under "
+                                            "virtual domain {}".format(vdom)), None
 
         # Check if policy does not have action deny, return error
         # Sure that only one policy exist
@@ -754,7 +764,8 @@ class FortiGateConnector(BaseConnector):
             param.update({"vdom": vdom})
 
         # Rest call to get the list of Addresses with name Phantom Addr {ip}
-        ret_code, json_resp = self._make_rest_call(FORTIGATE_GET_ADDRESSES.format(ip=ip_addr_obj_name), action_result, params=param)
+        ret_code, json_resp = self._make_rest_call(FORTIGATE_GET_ADDRESSES.format(ip=ip_addr_obj_name),
+                                                   action_result, params=param)
         if phantom.is_fail(ret_code):
             return action_result.get_status(), None
 
@@ -775,7 +786,8 @@ class FortiGateConnector(BaseConnector):
         else:
             param = None
 
-        ret_code, json_resp = self._make_rest_call(FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id, ip=ip_addr_obj_name), action_result, params=param)
+        ret_code, json_resp = self._make_rest_call(FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id,
+                                ip=ip_addr_obj_name), action_result, params=param)
 
         # Something went wrong
         if phantom.is_fail(ret_code):
