@@ -74,5 +74,5 @@ FORTIGATE_INVALID_POLICY_DENY = 'Invalid policy. Action of policy is not deny'
 FORTIGATE_ADDRESS_NOT_AVAILABLE = 'Address does not exist'
 FORTIGATE_IP_ALREADY_UNBLOCKED = 'IP is already unblocked'
 FORTIGATE_IP_ALREADY_BLOCKED = 'IP is already blocked'
-FORTIGATE_X_CSRFTOKEN_ERROR = "Error occurred while fetching X-CSRFTOKEN from session object. ' \
-'Please check the provided credentials in the asset configuration parameters"
+FORTIGATE_X_CSRFTOKEN_ERROR = "Error occurred while fetching X-CSRFTOKEN from session object. " \
+    "Please check the provided credentials in the asset configuration parameters"
