@@ -63,7 +63,7 @@ FORTIGATE_ERR_SERVER_CONNECTION = "Connection failed"
 FORTIGATE_ERR_FROM_SERVER = 'API failed. Status code: {status}. Detail: {detail}'
 FORTIGATE_ERR_JSON_PARSE = 'Unable to parse the fields parameter into a dictionary. ' \
     'Response text - {raw_text}. Error Code: {error_code}. Error Message: {error_msg}'
-FORTIGATE_ERR_REQUIRED_CONFIG_PARAMS = 'Please provide either password or api_key in the config for authentication'
+FORTIGATE_ERR_REQUIRED_CONFIG_PARAMS = 'Please provide either api_key or username and password in the config for authentication'
 FORTIGATE_REST_RESP_OTHER_ERROR_MSG = "Unknown error"
 FORTIGATE_IP_BLOCKED = 'IP blocked successfully'
 FORTIGATE_IP_UNBLOCKED = 'IP unblocked successfully'

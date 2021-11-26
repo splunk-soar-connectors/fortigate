@@ -33,7 +33,7 @@
             "order": 1
         },
         "username": {
-            "required": true,
+            "required": false,
             "order": 2,
             "data_type": "string",
             "description": "Username"

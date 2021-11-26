@@ -74,7 +74,7 @@ class FortiGateConnector(BaseConnector):
         except:
             return self.set_status(phantom.APP_ERROR, "Error occurred while getting the Phantom server's Python major version.")
 
-        self._api_username = self._handle_py_ver_compat_for_input_str(self._python_version, config[FORTIGATE_JSON_USERNAME])
+        self._api_username = self._handle_py_ver_compat_for_input_str(self._python_version, config.get(FORTIGATE_JSON_USERNAME))
         self._api_password = config.get(FORTIGATE_JSON_PASSWORD)
         self._api_key = config.get(FORTIGATE_JSON_API_KEY)
         self._api_vdom = config.get(FORTIGATE_JSON_VDOM, '')
@@ -84,7 +84,7 @@ class FortiGateConnector(BaseConnector):
         self._device = self._handle_py_ver_compat_for_input_str(self._python_version, config[FORTIGATE_JSON_URL])
 
         # Either password or API Key must be provided
-        if not self._api_password and not self._api_key:
+        if not self._api_key and (not self._api_username or not self._api_password):
             return self.set_status(phantom.APP_ERROR, FORTIGATE_ERR_REQUIRED_CONFIG_PARAMS)
 
         # removing single occurence of trailing back-slash or forward-slash
@@ -313,7 +313,7 @@ class FortiGateConnector(BaseConnector):
         # get, post or put, whatever the caller asked us to use,
         # if not specified the default will be 'get'
         try:
-            request_func = getattr(self._sess_obj, method) if self._api_password else getattr(requests, method)
+            request_func = getattr(requests, method) if self._api_key else getattr(self._sess_obj, method)
         except:
             self.debug_print(FORTIGATE_ERR_API_UNSUPPORTED_METHOD.format(method=method))
             # set the action_result status to error, the handler function
@@ -403,7 +403,7 @@ class FortiGateConnector(BaseConnector):
         # create summary object
         summary_data = action_result.update_summary({})
 
-        if self._api_password:
+        if not self._api_key:
             # Initiating login session
             ret_val = self._login(action_result)
             if phantom.is_fail(ret_val):
@@ -441,7 +441,7 @@ class FortiGateConnector(BaseConnector):
         self.save_progress(FORTIGATE_TEST_CONNECTIVITY_MSG)
         self.save_progress("Configured URL: {}".format(self._device))
 
-        if self._api_password:
+        if not self._api_key:
             ret_val = self._login(action_result)
 
             if phantom.is_fail(ret_val):
@@ -481,7 +481,7 @@ class FortiGateConnector(BaseConnector):
 
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        if self._api_password:
+        if not self._api_key:
             # Initiating login session
             ret_val = self._login(action_result)
 
@@ -556,7 +556,7 @@ class FortiGateConnector(BaseConnector):
 
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        if self._api_password:
+        if not self._api_key:
             # Initiating login session
             ret_val = self._login(action_result)
 
@@ -851,7 +851,7 @@ class FortiGateConnector(BaseConnector):
         """
 
         # Logout if it's password based authentication
-        if self._api_password:
+        if not self._api_key:
             return self._logout()
 
 
