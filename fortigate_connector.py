@@ -72,7 +72,7 @@ class FortiGateConnector(BaseConnector):
         try:
             self._python_version = int(sys.version_info[0])
         except:
-            return self.set_status(phantom.APP_ERROR, "Error occurred while getting the Phantom server's Python major version.")
+            return self.set_status(phantom.APP_ERROR, "Error occurred while getting the Phantom server's Python major version")
 
         self._api_username = self._handle_py_ver_compat_for_input_str(self._python_version, config.get(FORTIGATE_JSON_USERNAME))
         self._api_password = config.get(FORTIGATE_JSON_PASSWORD)
@@ -148,6 +148,32 @@ class FortiGateConnector(BaseConnector):
             error_msg = "Error message unavailable. Please check the asset configuration and|or action parameters."
 
         return error_code, error_msg
+
+    def _validate_integer(self, action_result, parameter, key, allow_zero=False):
+        """
+        Validate an integer.
+
+        :param action_result: Action result or BaseConnector object
+        :param parameter: input parameter
+        :param key: input parameter message key
+        :allow_zero: whether zero should be considered as valid value or not
+        :return: status phantom.APP_ERROR/phantom.APP_SUCCESS, integer value of the parameter or None in case of failure
+        """
+        if parameter is not None:
+            try:
+                if not float(parameter).is_integer():
+                    return action_result.set_status(phantom.APP_ERROR, FORTIGATE_VALID_INT_MSG.format(param=key)), None
+
+                parameter = int(parameter)
+            except:
+                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_VALID_INT_MSG.format(param=key)), None
+
+            if parameter < 0:
+                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_NON_NEG_INT_MSG.format(param=key)), None
+            if not allow_zero and parameter == 0:
+                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_NON_NEG_NON_ZERO_INT_MSG.format(param=key)), None
+
+        return phantom.APP_SUCCESS, parameter
 
     def _get_net_size(self, net_mask):
 
@@ -391,14 +417,9 @@ class FortiGateConnector(BaseConnector):
             vdom = self._api_vdom
 
         # fetch limit
-        limit = param.get('limit', FORTIGATE_PER_PAGE_DEFAULT_LIMIT)
-        try:
-            # validation for integer value
-            limit = int(limit)
-            if limit <= 0:
-                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_LIMIT_VALIDATION_MSG)
-        except:
-            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_LIMIT_VALIDATION_MSG)
+        ret_val, limit = self._validate_integer(action_result, param.get('limit', FORTIGATE_PER_PAGE_DEFAULT_LIMIT), 'limit')
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
 
         # create summary object
         summary_data = action_result.update_summary({})
@@ -473,7 +494,8 @@ class FortiGateConnector(BaseConnector):
             self.set_status(phantom.APP_ERROR, FORTIGATE_TEST_CONN_FAIL)
             return action_result.get_status()
 
-        self.set_status_save_progress(phantom.APP_SUCCESS, FORTIGATE_TEST_CONN_SUCC)
+        self.save_progress(FORTIGATE_TEST_CONN_SUCC)
+        self.set_status(phantom.APP_SUCCESS)
         return action_result.get_status()
 
     # Block IP address
