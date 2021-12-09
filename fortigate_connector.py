@@ -458,7 +458,7 @@ class FortiGateConnector(BaseConnector):
         Use a basic query to determine if the device IP/hostname, username and password is correct
         """
 
-        action_result = ActionResult()
+        action_result = self.add_action_result(ActionResult(dict(param)))
         self.save_progress(FORTIGATE_TEST_CONNECTIVITY_MSG)
         self.save_progress("Configured URL: {}".format(self._device))
 
@@ -466,8 +466,7 @@ class FortiGateConnector(BaseConnector):
             ret_val = self._login(action_result)
 
             if phantom.is_fail(ret_val):
-                # self.save_progress("Test Connectivity Failed")
-                self.save_progress(action_result.get_message())
+                self.save_progress("Test Connectivity Failed")
                 # return action_result.get_status()
 
                 # If SSL is enabled and URL configuration has IP address
@@ -475,7 +474,6 @@ class FortiGateConnector(BaseConnector):
                     # The failure could be due to IP provided in URL instead of hostname
                     self.save_progress(FORTIGATE_TEST_WARN_MSG)
 
-                self.set_status(phantom.APP_ERROR, FORTIGATE_TEST_CONN_FAIL)
                 return action_result.get_status()
 
         self.save_progress(FORTIGATE_TEST_ENDPOINT_MSG)
@@ -484,19 +482,17 @@ class FortiGateConnector(BaseConnector):
         status, _ = self._make_rest_call(FORTIGATE_BLOCKED_IPS, action_result)
 
         if phantom.is_fail(status):
-            self.save_progress(action_result.get_message())
+            self.save_progress("Test Connectivity Failed")
 
             # If SSL is enabled and URL configuration has IP address
             if self._api_key and self._verify_server_cert and (phantom.is_ip(self._device) or self._is_ipv6(self._device)):
                 # The failure could be due to IP provided in URL instead of hostname
                 self.save_progress(FORTIGATE_TEST_WARN_MSG)
 
-            self.set_status(phantom.APP_ERROR, FORTIGATE_TEST_CONN_FAIL)
             return action_result.get_status()
 
         self.save_progress(FORTIGATE_TEST_CONN_SUCC)
-        self.set_status(phantom.APP_SUCCESS)
-        return action_result.get_status()
+        return action_result.set_status(phantom.APP_SUCCESS)
 
     # Block IP address
     def _block_ip(self, param):
