@@ -2,7 +2,7 @@
 # FortiGate
 
 Publisher: Splunk  
-Connector Version: 2\.1\.1  
+Connector Version: 2\.1\.3  
 Product Vendor: Fortinet  
 Product Name: FortiGate  
 Product Version Supported (regex): "\.\*"  
