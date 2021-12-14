@@ -879,7 +879,7 @@ if __name__ == '__main__':
     pudb.set_trace()
     if len(sys.argv) < 2:
         print('No test json specified as input')
-        exit(0)
+        sys.exit()
     with open(sys.argv[1]) as f:
         in_json = f.read()
         in_json = json.loads(in_json)
@@ -887,4 +887,4 @@ if __name__ == '__main__':
         connector = FortiGateConnector()
         connector.print_progress_message = True
         connector._handle_action(json.dumps(in_json), None)
-    exit(0)
+    sys.exit()
