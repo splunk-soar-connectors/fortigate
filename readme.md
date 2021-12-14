@@ -2,7 +2,7 @@
 # FortiGate
 
 Publisher: Splunk  
-Connector Version: 2\.1\.4  
+Connector Version: 2\.1\.5  
 Product Vendor: Fortinet  
 Product Name: FortiGate  
 Product Version Supported (regex): "\.\*"  
@@ -211,6 +211,14 @@ application. Below are the explanation and usage of all those parameters.
     -   **<u>Action Parameter</u> - Limit**
         -   This parameter is used to limit the number of policy results. The default value is 100.
             If the limit is not provided, it will fetch by default 100 policy results.
+
+### Port Information
+The app uses HTTP/ HTTPS protocol for communicating with the Fortigate server. Below are the default ports used by Splunk SOAR.
+
+SERVICE NAME | TRANSPORT PROTOCOL | PORT
+------------ | ------------------ | ----
+**http** | tcp | 80
+**https** | tcp | 443
 
 
 ### Configuration Variables
