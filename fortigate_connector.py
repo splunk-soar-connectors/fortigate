@@ -26,7 +26,6 @@ from bs4 import UnicodeDammit
 from phantom.action_result import ActionResult
 from phantom.base_connector import BaseConnector
 
-# Local imports
 from fortigate_consts import *
 
 
