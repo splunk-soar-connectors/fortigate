@@ -14,6 +14,7 @@
     "product_version_regex": ".*",
     "min_phantom_version": "5.0.0",
     "python_version": "3",
+    "fips_compliant": true,
     "latest_tested_versions": [
         "On-premise v6.2.3 build1066 (GA)"
     ],
