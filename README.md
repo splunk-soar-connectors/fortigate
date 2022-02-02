@@ -2,16 +2,16 @@
 # FortiGate
 
 Publisher: Splunk  
-Connector Version: 2\.1\.5  
+Connector Version: 2\.1\.8  
 Product Vendor: Fortinet  
 Product Name: FortiGate  
 Product Version Supported (regex): "\.\*"  
-Minimum Product Version: 5\.0\.0  
+Minimum Product Version: 5\.1\.0  
 
 This app supports a variety of containment and investigative actions on the FortiGate Firewall
 
-[comment]: # " File: readme.md"
-[comment]: # "  Copyright (c) 2016-2021 Splunk Inc."
+[comment]: # " File: README.md"
+[comment]: # "  Copyright (c) 2016-2022 Splunk Inc."
 [comment]: # ""
 [comment]: # "Licensed under the Apache License, Version 2.0 (the 'License');"
 [comment]: # "you may not use this file except in compliance with the License."
@@ -212,13 +212,15 @@ application. Below are the explanation and usage of all those parameters.
         -   This parameter is used to limit the number of policy results. The default value is 100.
             If the limit is not provided, it will fetch by default 100 policy results.
 
-### Port Information
-The app uses HTTP/ HTTPS protocol for communicating with the Fortigate server. Below are the default ports used by Splunk SOAR.
+## Port Information
 
-SERVICE NAME | TRANSPORT PROTOCOL | PORT
------------- | ------------------ | ----
-**http** | tcp | 80
-**https** | tcp | 443
+The app uses HTTP/ HTTPS protocol for communicating with the Fortigate server. Below are the default
+ports used by Splunk SOAR.
+
+|         Service Name | Transport Protocol | Port |
+|----------------------|--------------------|------|
+|         http         | tcp                | 80   |
+|         https        | tcp                | 443  |
 
 
 ### Configuration Variables
