@@ -22,11 +22,19 @@ import sys
 
 import phantom.app as phantom
 import requests
-from bs4 import UnicodeDammit
+from bs4 import UnicodeDammit, BeautifulSoup
 from phantom.action_result import ActionResult
 from phantom.base_connector import BaseConnector
 
 from fortigate_consts import *
+
+
+class RetVal(tuple):
+    """Represent a class to create a tuple."""
+
+    def __new__(cls, val1, val2=None):
+        """Create a tuple from the provided values."""
+        return tuple.__new__(RetVal, (val1, val2))
 
 
 class FortiGateConnector(BaseConnector):
@@ -51,7 +59,8 @@ class FortiGateConnector(BaseConnector):
             FORTIGATE_REST_RESP_NOT_ALLOWED: FORTIGATE_REST_RESP_NOT_ALLOWED_MSG,
             FORTIGATE_REST_RESP_ENTITY_LARGE: FORTIGATE_REST_RESP_ENTITY_LARGE_MSG,
             FORTIGATE_REST_RESP_FAIL_DEPENDENCY: FORTIGATE_REST_RESP_FAIL_DEPENDENCY_MSG,
-            FORTIGATE_REST_RESP_INTERNAL_ERROR: FORTIGATE_REST_RESP_INTERNAL_ERROR_MSG
+            FORTIGATE_REST_RESP_INTERNAL_ERROR: FORTIGATE_REST_RESP_INTERNAL_ERROR_MSG,
+            FORTIGATE_REST_RESP_TOO_MANY_REQUESTS: FORTIGATE_REST_RESP_TOO_MANY_REQUESTS_MSG
         }
 
         return
@@ -321,6 +330,106 @@ class FortiGateConnector(BaseConnector):
         # Return success with total reports
         return phantom.APP_SUCCESS, total_results
 
+    def _process_empty_response(self, response, action_result):
+        """
+        Process empty response.
+
+        :param response: response object
+        :param action_result: object of Action Result
+        :return: status phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message)
+        """
+        if response.status_code == 200:
+            return RetVal(phantom.APP_SUCCESS, {})
+
+        return RetVal(
+            action_result.set_status(
+                phantom.APP_ERROR, FORTIGATE_ERR_EMPTY_RESPONSE.format(code=response.status_code)
+            ), None
+        )
+
+    def _process_html_response(self, response, action_result):
+        """
+        Process html response.
+
+        :param response: response object
+        :param action_result: object of Action Result
+        :return: status phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message)
+        """
+        # An html response, treat it like an error
+        status_code = response.status_code
+
+        try:
+            soup = BeautifulSoup(response.text, "html.parser")
+            # Remove the script, style, footer and navigation part from the HTML message
+            for element in soup(["script", "style", "footer", "nav"]):
+                element.extract()
+            error_text = soup.text
+            split_lines = error_text.split('\n')
+            split_lines = [x.strip() for x in split_lines if x.strip()]
+            error_text = '\n'.join(split_lines)
+        except:
+            error_text = FORTIGATE_UNABLE_TO_PARSE_ERR_DETAIL
+
+        if not error_text:
+            error_text = "Empty response and no information received"
+        message = "Status Code: {}. Data from server:\n{}\n".format(status_code, error_text)
+
+        message = message.replace('{', '{{').replace('}', '}}')
+        return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
+
+    def _process_json_response(self, response, action_result):
+        """
+        Process json response.
+
+        :param r: response object
+        :param action_result: object of Action Result
+        :return: status phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message)
+        """
+        status_code = response.status_code
+        # Try a json parse
+        try:
+            resp_json = response.json()
+        except Exception as e:
+            error_msg = self._get_error_message_from_exception(e)
+            return RetVal(
+                action_result.set_status(
+                    phantom.APP_ERROR, FORTIGATE_ERR_UNABLE_TO_PARSE_JSON_RESPONSE.format(error=error_msg)
+                ), None
+            )
+
+        if status_code in self._error_resp_dict.keys():
+            self.debug_print(FORTIGATE_ERR_FROM_SERVER.format(status=status_code,
+                                                              detail=self._error_resp_dict[status_code]))
+            # set the action_result status to error, the handler function
+            # will most probably return as is
+            return RetVal(action_result.set_status(phantom.APP_ERROR, FORTIGATE_ERR_FROM_SERVER, status=status_code,
+                                             detail=self._error_resp_dict[status_code]), resp_json)
+
+        if status_code == FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND:
+            return phantom.APP_SUCCESS, {'resource_not_available': True}
+            # return action_result.set_status(phantom.APP_ERROR, "Unauthorized error")
+            # message = "Status Code: {0}. Data from server:\n{1}\n".format(status_code,
+            #     response.text)
+            # message = message.replace(u'{', '{{').replace(u'}', '}}')
+            # return action_result.set_status(phantom.APP_ERROR, message), None
+
+        # Please specify the status codes here
+        if 200 <= status_code < 399:
+            return RetVal(phantom.APP_SUCCESS, resp_json)
+
+        if resp_json.get('error') or resp_json.get('error_description'):
+            error = resp_json.get('error', 'Unavailable')
+            error_details = resp_json.get('error_description', 'Unavailable')
+            message = "Error from server. Status Code: {}. Error: {}. Error Details: {}".format(status_code, error, error_details)
+        else:
+            # All other response codes from Rest call are failures
+            # The HTTP response does not return error message in case of unknown error code
+            message = FORTIGATE_ERR_FROM_SERVER.format(status=status_code, detail=FORTIGATE_REST_RESP_OTHER_ERROR_MSG)
+
+        self.debug_print(message)
+
+        return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
+
     # Function that makes the REST call to the device,
     # generic function that can be called from various action handlers
     def _make_rest_call(self, endpoint, action_result, data=None, method="get", headers=None, params=None):
@@ -364,46 +473,26 @@ class FortiGateConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Error Code: {0}. Error Message: {1}"
                                                    .format(error_code, error_msg)), rest_res
 
-        # rest_res[FORTIGATE_STATUS_CODE] = response.status_code
-        if response.status_code in self._error_resp_dict.keys():
-            self.debug_print(FORTIGATE_ERR_FROM_SERVER.format(status=response.status_code,
-                                                              detail=self._error_resp_dict[response.status_code]))
-            # set the action_result status to error, the handler function
-            # will most probably return as is
-            return (action_result.set_status(phantom.APP_ERROR, FORTIGATE_ERR_FROM_SERVER, status=response.status_code,
-                                             detail=self._error_resp_dict[response.status_code]), rest_res)
+        # Handle a JSON response
+        if 'json' in response.headers.get('Content-Type', ''):
+            return self._process_json_response(response, action_result)
 
-        if response.status_code == FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND:
-            return phantom.APP_SUCCESS, {'resource_not_available': True}
-            # return action_result.set_status(phantom.APP_ERROR, "Unauthorized error")
-            # message = "Status Code: {0}. Data from server:\n{1}\n".format(response.status_code,
-            #     response.text)
-            # message = message.replace(u'{', '{{').replace(u'}', '}}')
-            # return action_result.set_status(phantom.APP_ERROR, message), None
+        # Process an HTML response, Do this no matter what the api talks.
+        # There is a high chance of a PROXY in between phantom and the rest of
+        # world, in case of errors, PROXY's return HTML, this function parses
+        # the error and adds it to the action_result.
+        if 'html' in response.headers.get('Content-Type', ''):
+            return self._process_html_response(response, action_result)
 
-        if response.status_code == FORTIGATE_REST_RESP_SUCCESS:
-            content_type = response.headers['content-type']
-            if content_type.find('json') != -1:
-                try:
-                    rest_res = response.json()
-                except Exception as e:
-                    error_code, error_msg = self._get_error_message_from_exception(e)
-                    msg_string = FORTIGATE_ERR_JSON_PARSE.format(
-                        raw_text=response.text, error_code=error_code, error_msg=error_msg)
-                    # set the action_result status to error, the handler function
-                    # will most probably return as is
-                    return action_result.set_status(phantom.APP_ERROR, msg_string), rest_res
+        # it's not content-type that is to be parsed, handle an empty response
+        if not response.text:
+            return self._process_empty_response(response, action_result)
 
-            return phantom.APP_SUCCESS, rest_res
+        # everything else is actually an error at this point
+        error_text = response.text.replace('{', '{{').replace('}', '}}')
+        message = "Can't process response from server. Status Code: {} Data from server: {}".format(response.status_code, error_text)
 
-        # All other response codes from Rest call are failures
-        # The HTTP response does not return error message in case of unknown error code
-        err = FORTIGATE_ERR_FROM_SERVER.format(status=response.status_code, detail=FORTIGATE_REST_RESP_OTHER_ERROR_MSG)
-        self.debug_print(err)
-
-        # set the action_result status to error, the handler function
-        # will most probably return as is
-        return (action_result.set_status(phantom.APP_ERROR, err), rest_res)
+        return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
     # To list policies
     def _list_policies(self, param):
