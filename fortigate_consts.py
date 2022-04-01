@@ -1,6 +1,6 @@
 # File: fortigate_consts.py
 #
-# Copyright (c) 2016-2022 Splunk Inc.
+# Copyright (c) 2017-2022 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@ FORTIGATE_LIST_POLICIES = "/cmdb/firewall/policy/"
 
 # General constants
 FORTIGATE_JSON_USERNAME = "username"
-FORTIGATE_JSON_PASSWORD = "password"
-FORTIGATE_JSON_API_KEY = "api_key"
+FORTIGATE_JSON_PASSWORD = "password"  # pragma: allowlist secret
+FORTIGATE_JSON_API_KEY = "api_key"  # pragma: allowlist secret
 FORTIGATE_JSON_URL = "url"
 FORTIGATE_JSON_VDOM = "vdom"
 FORTIGATE_JSON_VERIFY_SERVER_CERT = "verify_server_cert"
