@@ -79,7 +79,7 @@ class FortiGateConnector(BaseConnector):
 
         try:
             self._python_version = int(sys.version_info[0])
-        except:
+        except Exception:
             return self.set_status(phantom.APP_ERROR, "Error occurred while getting the Phantom server's Python major version")
 
         self._api_username = self._handle_py_ver_compat_for_input_str(self._python_version, config.get(FORTIGATE_JSON_USERNAME))
@@ -121,7 +121,7 @@ class FortiGateConnector(BaseConnector):
         try:
             if input_str and python_version == 2:
                 input_str = UnicodeDammit(input_str).unicode_markup.encode('utf-8')
-        except:
+        except Exception:
             self.debug_print("Error occurred while handling python 2to3 compatibility for the input string")
 
         return input_str
@@ -143,7 +143,7 @@ class FortiGateConnector(BaseConnector):
             else:
                 error_code = "Error code unavailable"
                 error_msg = "Error message unavailable. Please check the asset configuration and|or action parameters."
-        except:
+        except Exception:
             error_code = "Error code unavailable"
             error_msg = "Error message unavailable. Please check the asset configuration and|or action parameters."
 
@@ -152,7 +152,7 @@ class FortiGateConnector(BaseConnector):
         except TypeError:
             error_msg = "Error occurred while connecting to the Fortigate server. " \
                 "Please check the asset configuration and|or the action parameters."
-        except:
+        except Exception:
             error_msg = "Error message unavailable. Please check the asset configuration and|or action parameters."
 
         return error_code, error_msg
@@ -173,7 +173,7 @@ class FortiGateConnector(BaseConnector):
                     return action_result.set_status(phantom.APP_ERROR, FORTIGATE_VALID_INT_MSG.format(param=key)), None
 
                 parameter = int(parameter)
-            except:
+            except Exception:
                 return action_result.set_status(phantom.APP_ERROR, FORTIGATE_VALID_INT_MSG.format(param=key)), None
 
             if parameter < 0:
@@ -255,7 +255,7 @@ class FortiGateConnector(BaseConnector):
         if net_size:
             try:
                 net_size = int(net_size)
-            except:
+            except Exception:
                 self.debug_print("net_size: {0} invalid int".format(net_size))
                 return False
 
@@ -367,7 +367,7 @@ class FortiGateConnector(BaseConnector):
             split_lines = error_text.split('\n')
             split_lines = [x.strip() for x in split_lines if x.strip()]
             error_text = '\n'.join(split_lines)
-        except:
+        except Exception:
             error_text = FORTIGATE_UNABLE_TO_PARSE_ERR_DETAIL
 
         if not error_text:
@@ -448,7 +448,7 @@ class FortiGateConnector(BaseConnector):
         # if not specified the default will be 'get'
         try:
             request_func = getattr(requests, method) if self._api_key else getattr(self._sess_obj, method)
-        except:
+        except Exception:
             self.debug_print(FORTIGATE_ERR_API_UNSUPPORTED_METHOD.format(method=method))
             # set the action_result status to error, the handler function
             # will most probably return as is
@@ -749,7 +749,7 @@ class FortiGateConnector(BaseConnector):
         # updating the CSRFTOKEN for authentication
         try:
             self._sess_obj.headers.update({'X-CSRFTOKEN': self._sess_obj.cookies['ccsrftoken'][1:-1]})
-        except:
+        except Exception:
             return action_result.set_status(phantom.APP_ERROR, FORTIGATE_X_CSRFTOKEN_ERROR)
 
         return phantom.APP_SUCCESS
@@ -942,7 +942,7 @@ class FortiGateConnector(BaseConnector):
 
         try:
             run_action = supported_actions[action]
-        except:
+        except Exception:
             raise ValueError('action %r is not supported' % action)
 
         return run_action(param)
