@@ -88,6 +88,7 @@ FORTIGATE_X_CSRFTOKEN_ERROR = "Error occurred while fetching X-CSRFTOKEN from se
 FORTIGATE_ERR_EMPTY_RESPONSE = "Status Code {code}. Empty response and no information in the header."
 FORTIGATE_UNABLE_TO_PARSE_ERR_DETAIL = "Cannot parse error details"
 FORTIGATE_ERR_UNABLE_TO_PARSE_JSON_RESPONSE = "Unable to parse response as JSON. {error}"
+FORTIGATE_UNEXPECTED_SERVER_RESPONSE = "Received unexpected response from the server. Please check the asset configuration parameters"
 
 # Constants relating to 'validate_integer'
 FORTIGATE_VALID_INT_MSG = "Please provide a valid integer value in the '{param}' parameter"

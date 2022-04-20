@@ -305,6 +305,9 @@ class FortiGateConnector(BaseConnector):
             if phantom.is_fail(ret_val):
                 return action_result.get_status(), None
 
+            if not response:
+                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE), None
+
             # If resource not found, its a failure
             if response.get('resource_not_available'):
                 self.debug_print(FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MSG)
@@ -355,9 +358,12 @@ class FortiGateConnector(BaseConnector):
         :param action_result: object of Action Result
         :return: status phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message)
         """
-        # An html response, treat it like an error
         status_code = response.status_code
+        # Login and logout endpoints return html response
+        if 200 <= status_code < 399:
+            return RetVal(phantom.APP_SUCCESS, None)
 
+        # An html response, treat it like an error
         try:
             soup = BeautifulSoup(response.text, "html.parser")
             # Remove the script, style, footer and navigation part from the HTML message
@@ -567,7 +573,7 @@ class FortiGateConnector(BaseConnector):
         self.save_progress(FORTIGATE_TEST_ENDPOINT_MSG)
 
         # Querying endpoint to check connection to device
-        status, _ = self._make_rest_call(FORTIGATE_BLOCKED_IPS, action_result)
+        status, response = self._make_rest_call(FORTIGATE_BLOCKED_IPS, action_result)
 
         if phantom.is_fail(status):
             self.save_progress("Test Connectivity Failed")
@@ -578,6 +584,10 @@ class FortiGateConnector(BaseConnector):
                 self.save_progress(FORTIGATE_TEST_WARN_MSG)
 
             return action_result.get_status()
+
+        if not response:
+            self.save_progress("Test Connectivity Failed")
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE)
 
         self.save_progress(FORTIGATE_TEST_CONN_SUCC)
         return action_result.set_status(phantom.APP_SUCCESS)
@@ -618,12 +628,15 @@ class FortiGateConnector(BaseConnector):
                 param = None
 
             # Create Address Entry Phantom Addr {ip}
-            add_addr_status, _ = self._make_rest_call(FORTIGATE_ADD_ADDRESS, action_result,
+            add_addr_status, response = self._make_rest_call(FORTIGATE_ADD_ADDRESS, action_result,
                                                       data=json.dumps(address_create_params), method="post", params=param)
             # Something went wrong
             if phantom.is_fail(add_addr_status):
                 return action_result.set_status(phantom.APP_ERROR, "Unable to create Address object. {0}"
                                                 .format(action_result.get_message()))
+
+            if not response:
+                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE)
 
         # To get policy id from policy name
         ret_val, policy_id = self._get_policy_id(policy_name, vdom, action_result)
@@ -654,6 +667,9 @@ class FortiGateConnector(BaseConnector):
 
         if phantom.is_fail(status):
             return action_result.get_status()
+
+        if not response:
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE)
 
         return action_result.set_status(phantom.APP_SUCCESS, FORTIGATE_IP_BLOCKED)
 
@@ -708,6 +724,9 @@ class FortiGateConnector(BaseConnector):
         if phantom.is_fail(dstaddr_status):
             return action_result.get_status()
 
+        if not dstaddr_resp:
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE)
+
         # If resource not available, indicates that address entry is
         # not configured in policy as destination
         if dstaddr_resp.get('resource_not_available'):
@@ -721,11 +740,14 @@ class FortiGateConnector(BaseConnector):
             param = None
 
         # Unblock an IP
-        status, _ = self._make_rest_call(FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id, ip=ip_addr_obj_name),
+        status, response = self._make_rest_call(FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id, ip=ip_addr_obj_name),
                                          action_result, method="delete", params=param)
 
         if phantom.is_fail(status):
             return action_result.get_status()
+
+        if not response:
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE)
 
         # Blocked Successfully
         return action_result.set_status(phantom.APP_SUCCESS, FORTIGATE_IP_UNBLOCKED)
@@ -828,6 +850,9 @@ class FortiGateConnector(BaseConnector):
         if phantom.is_fail(ret_code):
             return action_result.get_status(), policy_id
 
+        if not json_resp:
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE), None
+
         # If resource not available its a failure
         if json_resp.get('resource_not_available'):
             return action_result.set_status(phantom.APP_ERROR, FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MSG), policy_id
@@ -874,6 +899,9 @@ class FortiGateConnector(BaseConnector):
         if phantom.is_fail(ret_code):
             return action_result.get_status(), None
 
+        if not json_resp:
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE), None
+
         # Check is address is not available
         if json_resp.get('resource_not_available'):
             return phantom.APP_SUCCESS, False
@@ -897,6 +925,9 @@ class FortiGateConnector(BaseConnector):
         # Something went wrong
         if phantom.is_fail(ret_code):
             return action_result.get_status(), address_blocked
+
+        if not json_resp:
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE), None
 
         # Check if resource not available, its an failure scenario
         if json_resp.get('resource_not_available'):
