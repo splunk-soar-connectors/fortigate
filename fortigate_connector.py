@@ -333,6 +333,37 @@ class FortiGateConnector(BaseConnector):
         # Return success with total reports
         return phantom.APP_SUCCESS, total_results
 
+    def _process_response(self, response, action_result):
+        """ This function is used to process html response.
+
+        :param response: response data
+        :param action_result: object of Action Result
+        :return: status phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message)
+        """
+
+        # Process each 'Content-Type' of response separately
+
+        # Process a json response
+        if 'json' in response.headers.get('Content-Type', ''):
+            return self._process_json_response(response, action_result)
+
+        # Process an HTML response, Do this no matter what the API talks.
+        # There is a high chance of a PROXY in between phantom and the rest of
+        # world, in case of errors, PROXY's return HTML, this function parses
+        # the error and adds it to the action_result.
+        if 'html' in response.headers.get('Content-Type', ''):
+            return self._process_html_response(response, action_result)
+
+        # it's not content-type that is to be parsed, handle an empty response
+        if not response.text:
+            return self._process_empty_response(response, action_result)
+
+        # everything else is actually an error at this point
+        error_text = response.text.replace('{', '{{').replace('}', '}}')
+        message = "Can't process response from server. Status Code: {} Data from server: {}".format(response.status_code, error_text)
+
+        return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
+
     def _process_empty_response(self, response, action_result):
         """
         Process empty response.
@@ -403,21 +434,16 @@ class FortiGateConnector(BaseConnector):
                 ), None
             )
 
-        if status_code in self._error_resp_dict.keys():
+        if status_code in self._error_resp_dict:
             self.debug_print(FORTIGATE_ERR_FROM_SERVER.format(status=status_code,
                                                               detail=self._error_resp_dict[status_code]))
             # set the action_result status to error, the handler function
             # will most probably return as is
-            return RetVal(action_result.set_status(phantom.APP_ERROR, FORTIGATE_ERR_FROM_SERVER, status=status_code,
-                                             detail=self._error_resp_dict[status_code]), resp_json)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, FORTIGATE_ERR_FROM_SERVER.format(status=status_code,
+                                             detail=self._error_resp_dict[status_code])), resp_json)
 
         if status_code == FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND:
             return phantom.APP_SUCCESS, {'resource_not_available': True}
-            # return action_result.set_status(phantom.APP_ERROR, "Unauthorized error")
-            # message = "Status Code: {0}. Data from server:\n{1}\n".format(status_code,
-            #     response.text)
-            # message = message.replace(u'{', '{{').replace(u'}', '}}')
-            # return action_result.set_status(phantom.APP_ERROR, message), None
 
         # Please specify the status codes here
         if 200 <= status_code < 399:
@@ -431,8 +457,6 @@ class FortiGateConnector(BaseConnector):
             # All other response codes from Rest call are failures
             # The HTTP response does not return error message in case of unknown error code
             message = FORTIGATE_ERR_FROM_SERVER.format(status=status_code, detail=FORTIGATE_REST_RESP_OTHER_ERROR_MSG)
-
-        self.debug_print(message)
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
@@ -479,26 +503,7 @@ class FortiGateConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Error Code: {0}. Error Message: {1}"
                                                    .format(error_code, error_msg)), rest_res
 
-        # Handle a JSON response
-        if 'json' in response.headers.get('Content-Type', ''):
-            return self._process_json_response(response, action_result)
-
-        # Process an HTML response, Do this no matter what the api talks.
-        # There is a high chance of a PROXY in between phantom and the rest of
-        # world, in case of errors, PROXY's return HTML, this function parses
-        # the error and adds it to the action_result.
-        if 'html' in response.headers.get('Content-Type', ''):
-            return self._process_html_response(response, action_result)
-
-        # it's not content-type that is to be parsed, handle an empty response
-        if not response.text:
-            return self._process_empty_response(response, action_result)
-
-        # everything else is actually an error at this point
-        error_text = response.text.replace('{', '{{').replace('}', '}}')
-        message = "Can't process response from server. Status Code: {} Data from server: {}".format(response.status_code, error_text)
-
-        return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
+        return self._process_response(response, action_result)
 
     # To list policies
     def _list_policies(self, param):
