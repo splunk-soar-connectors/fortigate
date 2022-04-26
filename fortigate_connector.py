@@ -334,11 +334,12 @@ class FortiGateConnector(BaseConnector):
         return phantom.APP_SUCCESS, total_results
 
     def _process_response(self, response, action_result):
-        """ This function is used to process html response.
+        """ This function is used to process responses from the API.
 
         :param response: response data
         :param action_result: object of Action Result
-        :return: status phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message)
+        :return status: phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message)
+        :return response: processed response
         """
 
         # Process each 'Content-Type' of response separately
