@@ -1,6 +1,6 @@
 # File: fortigate_consts.py
 #
-# Copyright (c) 2016-2022 Splunk Inc.
+# Copyright (c) 2017-2022 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@ FORTIGATE_LIST_POLICIES = "/cmdb/firewall/policy/"
 
 # General constants
 FORTIGATE_JSON_USERNAME = "username"
-FORTIGATE_JSON_PASSWORD = "password"
-FORTIGATE_JSON_API_KEY = "api_key"
+FORTIGATE_JSON_PASSWORD = "password"  # pragma: allowlist secret
+FORTIGATE_JSON_API_KEY = "api_key"  # pragma: allowlist secret
 FORTIGATE_JSON_URL = "url"
 FORTIGATE_JSON_VDOM = "vdom"
 FORTIGATE_JSON_VERIFY_SERVER_CERT = "verify_server_cert"
@@ -64,6 +64,8 @@ FORTIGATE_REST_RESP_FAIL_DEPENDENCY_MSG = 'Fail dependency can be duplicate reso
 FORTIGATE_REST_RESP_INTERNAL_ERROR = 500
 FORTIGATE_REST_RESP_INTERNAL_ERROR_MSG = 'Internal error when processing the request'
 FORTIGATE_REST_RESP_SUCCESS = 200
+FORTIGATE_REST_RESP_TOO_MANY_REQUESTS = 429
+FORTIGATE_REST_RESP_TOO_MANY_REQUESTS_MSG = 'Too many requests - the rate limit has been exceeded'
 
 # Error constants
 FORTIGATE_ERR_API_UNSUPPORTED_METHOD = "Unsupported method"
@@ -83,6 +85,10 @@ FORTIGATE_IP_ALREADY_UNBLOCKED = 'IP is already unblocked'
 FORTIGATE_IP_ALREADY_BLOCKED = 'IP is already blocked'
 FORTIGATE_X_CSRFTOKEN_ERROR = "Error occurred while fetching X-CSRFTOKEN from session object. " \
     "Please check the provided credentials in the asset configuration parameters"
+FORTIGATE_ERR_EMPTY_RESPONSE = "Status Code {code}. Empty response and no information in the header."
+FORTIGATE_UNABLE_TO_PARSE_ERR_DETAIL = "Cannot parse error details"
+FORTIGATE_ERR_UNABLE_TO_PARSE_JSON_RESPONSE = "Unable to parse response as JSON. {error}"
+FORTIGATE_UNEXPECTED_SERVER_RESPONSE = "Received unexpected response from the server. Please check the asset configuration parameters"
 
 # Constants relating to 'validate_integer'
 FORTIGATE_VALID_INT_MSG = "Please provide a valid integer value in the '{param}' parameter"
