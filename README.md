@@ -2,11 +2,11 @@
 # FortiGate
 
 Publisher: Splunk  
-Connector Version: 2\.1\.8  
+Connector Version: 2\.2\.1  
 Product Vendor: Fortinet  
 Product Name: FortiGate  
 Product Version Supported (regex): "\.\*"  
-Minimum Product Version: 5\.1\.0  
+Minimum Product Version: 5\.2\.0  
 
 This app supports a variety of containment and investigative actions on the FortiGate Firewall
 
