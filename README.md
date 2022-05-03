@@ -2,16 +2,16 @@
 # FortiGate
 
 Publisher: Splunk  
-Connector Version: 2\.1\.8  
+Connector Version: 2\.2\.1  
 Product Vendor: Fortinet  
 Product Name: FortiGate  
 Product Version Supported (regex): "\.\*"  
-Minimum Product Version: 5\.1\.0  
+Minimum Product Version: 5\.2\.0  
 
 This app supports a variety of containment and investigative actions on the FortiGate Firewall
 
 [comment]: # " File: README.md"
-[comment]: # "  Copyright (c) 2016-2022 Splunk Inc."
+[comment]: # "  Copyright (c) 2017-2022 Splunk Inc."
 [comment]: # ""
 [comment]: # "Licensed under the Apache License, Version 2.0 (the 'License');"
 [comment]: # "you may not use this file except in compliance with the License."

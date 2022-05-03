@@ -1,6 +1,6 @@
 # File: fortigate_connector.py
 #
-# Copyright (c) 2016-2022 Splunk Inc.
+# Copyright (c) 2017-2022 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,11 +22,19 @@ import sys
 
 import phantom.app as phantom
 import requests
-from bs4 import UnicodeDammit
+from bs4 import BeautifulSoup, UnicodeDammit
 from phantom.action_result import ActionResult
 from phantom.base_connector import BaseConnector
 
 from fortigate_consts import *
+
+
+class RetVal(tuple):
+    """Represent a class to create a tuple."""
+
+    def __new__(cls, val1, val2=None):
+        """Create a tuple from the provided values."""
+        return tuple.__new__(RetVal, (val1, val2))
 
 
 class FortiGateConnector(BaseConnector):
@@ -51,7 +59,8 @@ class FortiGateConnector(BaseConnector):
             FORTIGATE_REST_RESP_NOT_ALLOWED: FORTIGATE_REST_RESP_NOT_ALLOWED_MSG,
             FORTIGATE_REST_RESP_ENTITY_LARGE: FORTIGATE_REST_RESP_ENTITY_LARGE_MSG,
             FORTIGATE_REST_RESP_FAIL_DEPENDENCY: FORTIGATE_REST_RESP_FAIL_DEPENDENCY_MSG,
-            FORTIGATE_REST_RESP_INTERNAL_ERROR: FORTIGATE_REST_RESP_INTERNAL_ERROR_MSG
+            FORTIGATE_REST_RESP_INTERNAL_ERROR: FORTIGATE_REST_RESP_INTERNAL_ERROR_MSG,
+            FORTIGATE_REST_RESP_TOO_MANY_REQUESTS: FORTIGATE_REST_RESP_TOO_MANY_REQUESTS_MSG
         }
 
         return
@@ -70,7 +79,7 @@ class FortiGateConnector(BaseConnector):
 
         try:
             self._python_version = int(sys.version_info[0])
-        except:
+        except Exception:
             return self.set_status(phantom.APP_ERROR, "Error occurred while getting the Phantom server's Python major version")
 
         self._api_username = self._handle_py_ver_compat_for_input_str(self._python_version, config.get(FORTIGATE_JSON_USERNAME))
@@ -112,7 +121,7 @@ class FortiGateConnector(BaseConnector):
         try:
             if input_str and python_version == 2:
                 input_str = UnicodeDammit(input_str).unicode_markup.encode('utf-8')
-        except:
+        except Exception:
             self.debug_print("Error occurred while handling python 2to3 compatibility for the input string")
 
         return input_str
@@ -134,7 +143,7 @@ class FortiGateConnector(BaseConnector):
             else:
                 error_code = "Error code unavailable"
                 error_msg = "Error message unavailable. Please check the asset configuration and|or action parameters."
-        except:
+        except Exception:
             error_code = "Error code unavailable"
             error_msg = "Error message unavailable. Please check the asset configuration and|or action parameters."
 
@@ -143,7 +152,7 @@ class FortiGateConnector(BaseConnector):
         except TypeError:
             error_msg = "Error occurred while connecting to the Fortigate server. " \
                 "Please check the asset configuration and|or the action parameters."
-        except:
+        except Exception:
             error_msg = "Error message unavailable. Please check the asset configuration and|or action parameters."
 
         return error_code, error_msg
@@ -164,7 +173,7 @@ class FortiGateConnector(BaseConnector):
                     return action_result.set_status(phantom.APP_ERROR, FORTIGATE_VALID_INT_MSG.format(param=key)), None
 
                 parameter = int(parameter)
-            except:
+            except Exception:
                 return action_result.set_status(phantom.APP_ERROR, FORTIGATE_VALID_INT_MSG.format(param=key)), None
 
             if parameter < 0:
@@ -246,7 +255,7 @@ class FortiGateConnector(BaseConnector):
         if net_size:
             try:
                 net_size = int(net_size)
-            except:
+            except Exception:
                 self.debug_print("net_size: {0} invalid int".format(net_size))
                 return False
 
@@ -296,6 +305,9 @@ class FortiGateConnector(BaseConnector):
             if phantom.is_fail(ret_val):
                 return action_result.get_status(), None
 
+            if not response:
+                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE), None
+
             # If resource not found, its a failure
             if response.get('resource_not_available'):
                 self.debug_print(FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MSG)
@@ -321,6 +333,134 @@ class FortiGateConnector(BaseConnector):
         # Return success with total reports
         return phantom.APP_SUCCESS, total_results
 
+    def _process_response(self, response, action_result):
+        """ This function is used to process responses from the API.
+
+        :param response: response data
+        :param action_result: object of Action Result
+        :return status: phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message)
+        :return response: processed response
+        """
+
+        # Process each 'Content-Type' of response separately
+
+        # Process a json response
+        if 'json' in response.headers.get('Content-Type', ''):
+            return self._process_json_response(response, action_result)
+
+        # Process an HTML response, Do this no matter what the API talks.
+        # There is a high chance of a PROXY in between phantom and the rest of
+        # world, in case of errors, PROXY's return HTML, this function parses
+        # the error and adds it to the action_result.
+        if 'html' in response.headers.get('Content-Type', ''):
+            return self._process_html_response(response, action_result)
+
+        # it's not content-type that is to be parsed, handle an empty response
+        if not response.text:
+            return self._process_empty_response(response, action_result)
+
+        # everything else is actually an error at this point
+        error_text = response.text.replace('{', '{{').replace('}', '}}')
+        message = "Can't process response from server. Status Code: {} Data from server: {}".format(response.status_code, error_text)
+
+        return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
+
+    def _process_empty_response(self, response, action_result):
+        """
+        Process empty response.
+
+        :param response: response object
+        :param action_result: object of Action Result
+        :return: status phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message)
+        """
+        if response.status_code == 200:
+            return RetVal(phantom.APP_SUCCESS, {})
+
+        return RetVal(
+            action_result.set_status(
+                phantom.APP_ERROR, FORTIGATE_ERR_EMPTY_RESPONSE.format(code=response.status_code)
+            ), None
+        )
+
+    def _process_html_response(self, response, action_result):
+        """
+        Process html response.
+
+        :param response: response object
+        :param action_result: object of Action Result
+        :return: status phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message)
+        """
+        status_code = response.status_code
+        # Login and logout endpoints return html response
+        if 200 <= status_code < 399:
+            return RetVal(phantom.APP_SUCCESS, None)
+
+        # An html response, treat it like an error
+        try:
+            soup = BeautifulSoup(response.text, "html.parser")
+            # Remove the script, style, footer and navigation part from the HTML message
+            for element in soup(["script", "style", "footer", "nav"]):
+                element.extract()
+            error_text = soup.text
+            split_lines = error_text.split('\n')
+            split_lines = [x.strip() for x in split_lines if x.strip()]
+            error_text = '\n'.join(split_lines)
+        except Exception:
+            error_text = FORTIGATE_UNABLE_TO_PARSE_ERR_DETAIL
+
+        if not error_text:
+            error_text = "Empty response and no information received"
+        message = "Status Code: {}. Data from server:\n{}\n".format(status_code, error_text)
+
+        message = message.replace('{', '{{').replace('}', '}}')
+        return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
+
+    def _process_json_response(self, response, action_result):
+        """
+        Process json response.
+
+        :param r: response object
+        :param action_result: object of Action Result
+        :return: status phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message)
+        """
+        status_code = response.status_code
+        # Try a json parse
+        try:
+            resp_json = response.json()
+        except Exception as e:
+            error_msg = self._get_error_message_from_exception(e)
+            return RetVal(
+                action_result.set_status(
+                    phantom.APP_ERROR, FORTIGATE_ERR_UNABLE_TO_PARSE_JSON_RESPONSE.format(error=error_msg)
+                ), None
+            )
+
+        if status_code in self._error_resp_dict:
+            self.debug_print(FORTIGATE_ERR_FROM_SERVER.format(status=status_code,
+                                                              detail=self._error_resp_dict[status_code]))
+            # set the action_result status to error, the handler function
+            # will most probably return as is
+            return RetVal(action_result.set_status(phantom.APP_ERROR, FORTIGATE_ERR_FROM_SERVER.format(status=status_code,
+                                             detail=self._error_resp_dict[status_code])), resp_json)
+
+        if status_code == FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND:
+            return phantom.APP_SUCCESS, {'resource_not_available': True}
+
+        # Please specify the status codes here
+        if 200 <= status_code < 399:
+            return RetVal(phantom.APP_SUCCESS, resp_json)
+
+        if resp_json.get('error') or resp_json.get('error_description'):
+            error = resp_json.get('error', 'Unavailable')
+            error_details = resp_json.get('error_description', 'Unavailable')
+            message = "Error from server. Status Code: {}. Error: {}. Error Details: {}".format(status_code, error, error_details)
+        else:
+            # All other response codes from Rest call are failures
+            # The HTTP response does not return error message in case of unknown error code
+            message = FORTIGATE_ERR_FROM_SERVER.format(status=status_code, detail=FORTIGATE_REST_RESP_OTHER_ERROR_MSG)
+
+        return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
+
     # Function that makes the REST call to the device,
     # generic function that can be called from various action handlers
     def _make_rest_call(self, endpoint, action_result, data=None, method="get", headers=None, params=None):
@@ -339,7 +479,7 @@ class FortiGateConnector(BaseConnector):
         # if not specified the default will be 'get'
         try:
             request_func = getattr(requests, method) if self._api_key else getattr(self._sess_obj, method)
-        except:
+        except Exception:
             self.debug_print(FORTIGATE_ERR_API_UNSUPPORTED_METHOD.format(method=method))
             # set the action_result status to error, the handler function
             # will most probably return as is
@@ -364,46 +504,7 @@ class FortiGateConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Error Code: {0}. Error Message: {1}"
                                                    .format(error_code, error_msg)), rest_res
 
-        # rest_res[FORTIGATE_STATUS_CODE] = response.status_code
-        if response.status_code in self._error_resp_dict.keys():
-            self.debug_print(FORTIGATE_ERR_FROM_SERVER.format(status=response.status_code,
-                                                              detail=self._error_resp_dict[response.status_code]))
-            # set the action_result status to error, the handler function
-            # will most probably return as is
-            return (action_result.set_status(phantom.APP_ERROR, FORTIGATE_ERR_FROM_SERVER, status=response.status_code,
-                                             detail=self._error_resp_dict[response.status_code]), rest_res)
-
-        if response.status_code == FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND:
-            return phantom.APP_SUCCESS, {'resource_not_available': True}
-            # return action_result.set_status(phantom.APP_ERROR, "Unauthorized error")
-            # message = "Status Code: {0}. Data from server:\n{1}\n".format(response.status_code,
-            #     response.text)
-            # message = message.replace(u'{', '{{').replace(u'}', '}}')
-            # return action_result.set_status(phantom.APP_ERROR, message), None
-
-        if response.status_code == FORTIGATE_REST_RESP_SUCCESS:
-            content_type = response.headers['content-type']
-            if content_type.find('json') != -1:
-                try:
-                    rest_res = response.json()
-                except Exception as e:
-                    error_code, error_msg = self._get_error_message_from_exception(e)
-                    msg_string = FORTIGATE_ERR_JSON_PARSE.format(
-                        raw_text=response.text, error_code=error_code, error_msg=error_msg)
-                    # set the action_result status to error, the handler function
-                    # will most probably return as is
-                    return action_result.set_status(phantom.APP_ERROR, msg_string), rest_res
-
-            return phantom.APP_SUCCESS, rest_res
-
-        # All other response codes from Rest call are failures
-        # The HTTP response does not return error message in case of unknown error code
-        err = FORTIGATE_ERR_FROM_SERVER.format(status=response.status_code, detail=FORTIGATE_REST_RESP_OTHER_ERROR_MSG)
-        self.debug_print(err)
-
-        # set the action_result status to error, the handler function
-        # will most probably return as is
-        return (action_result.set_status(phantom.APP_ERROR, err), rest_res)
+        return self._process_response(response, action_result)
 
     # To list policies
     def _list_policies(self, param):
@@ -478,7 +579,7 @@ class FortiGateConnector(BaseConnector):
         self.save_progress(FORTIGATE_TEST_ENDPOINT_MSG)
 
         # Querying endpoint to check connection to device
-        status, _ = self._make_rest_call(FORTIGATE_BLOCKED_IPS, action_result)
+        status, response = self._make_rest_call(FORTIGATE_BLOCKED_IPS, action_result)
 
         if phantom.is_fail(status):
             self.save_progress("Test Connectivity Failed")
@@ -489,6 +590,10 @@ class FortiGateConnector(BaseConnector):
                 self.save_progress(FORTIGATE_TEST_WARN_MSG)
 
             return action_result.get_status()
+
+        if not response:
+            self.save_progress("Test Connectivity Failed")
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE)
 
         self.save_progress(FORTIGATE_TEST_CONN_SUCC)
         return action_result.set_status(phantom.APP_SUCCESS)
@@ -529,12 +634,15 @@ class FortiGateConnector(BaseConnector):
                 param = None
 
             # Create Address Entry Phantom Addr {ip}
-            add_addr_status, _ = self._make_rest_call(FORTIGATE_ADD_ADDRESS, action_result,
+            add_addr_status, response = self._make_rest_call(FORTIGATE_ADD_ADDRESS, action_result,
                                                       data=json.dumps(address_create_params), method="post", params=param)
             # Something went wrong
             if phantom.is_fail(add_addr_status):
                 return action_result.set_status(phantom.APP_ERROR, "Unable to create Address object. {0}"
                                                 .format(action_result.get_message()))
+
+            if not response:
+                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE)
 
         # To get policy id from policy name
         ret_val, policy_id = self._get_policy_id(policy_name, vdom, action_result)
@@ -565,6 +673,9 @@ class FortiGateConnector(BaseConnector):
 
         if phantom.is_fail(status):
             return action_result.get_status()
+
+        if not response:
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE)
 
         return action_result.set_status(phantom.APP_SUCCESS, FORTIGATE_IP_BLOCKED)
 
@@ -619,6 +730,9 @@ class FortiGateConnector(BaseConnector):
         if phantom.is_fail(dstaddr_status):
             return action_result.get_status()
 
+        if not dstaddr_resp:
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE)
+
         # If resource not available, indicates that address entry is
         # not configured in policy as destination
         if dstaddr_resp.get('resource_not_available'):
@@ -632,11 +746,14 @@ class FortiGateConnector(BaseConnector):
             param = None
 
         # Unblock an IP
-        status, _ = self._make_rest_call(FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id, ip=ip_addr_obj_name),
+        status, response = self._make_rest_call(FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id, ip=ip_addr_obj_name),
                                          action_result, method="delete", params=param)
 
         if phantom.is_fail(status):
             return action_result.get_status()
+
+        if not response:
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE)
 
         # Blocked Successfully
         return action_result.set_status(phantom.APP_SUCCESS, FORTIGATE_IP_UNBLOCKED)
@@ -660,7 +777,7 @@ class FortiGateConnector(BaseConnector):
         # updating the CSRFTOKEN for authentication
         try:
             self._sess_obj.headers.update({'X-CSRFTOKEN': self._sess_obj.cookies['ccsrftoken'][1:-1]})
-        except:
+        except Exception:
             return action_result.set_status(phantom.APP_ERROR, FORTIGATE_X_CSRFTOKEN_ERROR)
 
         return phantom.APP_SUCCESS
@@ -739,6 +856,9 @@ class FortiGateConnector(BaseConnector):
         if phantom.is_fail(ret_code):
             return action_result.get_status(), policy_id
 
+        if not json_resp:
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE), None
+
         # If resource not available its a failure
         if json_resp.get('resource_not_available'):
             return action_result.set_status(phantom.APP_ERROR, FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MSG), policy_id
@@ -785,6 +905,9 @@ class FortiGateConnector(BaseConnector):
         if phantom.is_fail(ret_code):
             return action_result.get_status(), None
 
+        if not json_resp:
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE), None
+
         # Check is address is not available
         if json_resp.get('resource_not_available'):
             return phantom.APP_SUCCESS, False
@@ -808,6 +931,9 @@ class FortiGateConnector(BaseConnector):
         # Something went wrong
         if phantom.is_fail(ret_code):
             return action_result.get_status(), address_blocked
+
+        if not json_resp:
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE), None
 
         # Check if resource not available, its an failure scenario
         if json_resp.get('resource_not_available'):
@@ -853,7 +979,7 @@ class FortiGateConnector(BaseConnector):
 
         try:
             run_action = supported_actions[action]
-        except:
+        except Exception:
             raise ValueError('action %r is not supported' % action)
 
         return run_action(param)
