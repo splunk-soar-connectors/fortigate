@@ -2,11 +2,11 @@
 # FortiGate
 
 Publisher: Splunk  
-Connector Version: 2\.2\.1  
+Connector Version: 2.2.2  
 Product Vendor: Fortinet  
 Product Name: FortiGate  
-Product Version Supported (regex): "\.\*"  
-Minimum Product Version: 5\.2\.0  
+Product Version Supported (regex): ".\*"  
+Minimum Product Version: 5.2.0  
 
 This app supports a variety of containment and investigative actions on the FortiGate Firewall
 
@@ -228,12 +228,12 @@ The below configuration variables are required for this Connector to operate.  T
 
 VARIABLE | REQUIRED | TYPE | DESCRIPTION
 -------- | -------- | ---- | -----------
-**url** |  required  | string | Device URL for e\.g\. https\://myforti\.contoso\.com
-**verify\_server\_cert** |  optional  | boolean | Verify server certificate
+**url** |  required  | string | Device URL for e.g. https://myforti.contoso.com
+**verify_server_cert** |  optional  | boolean | Verify server certificate
 **username** |  optional  | string | Username
 **password** |  optional  | password | Password
-**api\_key** |  optional  | password | API Key
-**vdom** |  optional  | string | Virtual domain \(vdom\)
+**api_key** |  optional  | password | API Key
+**vdom** |  optional  | string | Virtual domain (vdom)
 
 ### Supported Actions  
 [test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity  
@@ -259,7 +259,7 @@ Block an IP
 Type: **contain**  
 Read only: **False**
 
-The action supports the following format for the <b>ip</b> parameter\:<ul><li>Simple IP\: For example 123\.123\.123\.123</li><li>IP, Subnet mask\: 123\.123\.0\.0 255\.255\.0\.0</li><li>CIDR Notation\: 123\.123\.0\.0/16</li></ul>This action uses a multistep approach to block IP\:<ul><li>Create an address entry named '<b>Phantom Addr \[ip\_address\]\_\[net\_bits\]</b>' if address not present, else directly configure address as the destination\.</li><li>Configure the address entered as the <i>destination</i> of the specified <b>policy name if the policy exists\. If the policy does not exist, action returns an error\- Policy probably does not exist in the given virtual domain\.</b>\.</li><li>The <b>policy</b> value expected is the IPv4 policy name\.</li></ul>The action will fail if\:<ul><li>The policy name is not found\. The action does not create a policy but edits it\.</li><li>Policy action is not a <b>deny</b>\.</li><li>Another value other than policy name is given as the <b>policy</b> such as policy ID\.</li><li>The policy name is not IPv4 policy\.</li></ul>
+The action supports the following format for the <b>ip</b> parameter:<ul><li>Simple IP: For example 123.123.123.123</li><li>IP, Subnet mask: 123.123.0.0 255.255.0.0</li><li>CIDR Notation: 123.123.0.0/16</li></ul>This action uses a multistep approach to block IP:<ul><li>Create an address entry named '<b>Phantom Addr [ip_address]_[net_bits]</b>' if address not present, else directly configure address as the destination.</li><li>Configure the address entered as the <i>destination</i> of the specified <b>policy name if the policy exists. If the policy does not exist, action returns an error- Policy probably does not exist in the given virtual domain.</b>.</li><li>The <b>policy</b> value expected is the IPv4 policy name.</li></ul>The action will fail if:<ul><li>The policy name is not found. The action does not create a policy but edits it.</li><li>Policy action is not a <b>deny</b>.</li><li>Another value other than policy name is given as the <b>policy</b> such as policy ID.</li><li>The policy name is not IPv4 policy.</li></ul>
 
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
@@ -269,17 +269,17 @@ PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 **vdom** |  optional  | Virtual domain | string |  `fortigate vdom` 
 
 #### Action Output
-DATA PATH | TYPE | CONTAINS
---------- | ---- | --------
-action\_result\.status | string | 
-action\_result\.parameter\.ip | string |  `ip` 
-action\_result\.parameter\.policy | string |  `fortigate policy` 
-action\_result\.parameter\.vdom | string |  `fortigate vdom` 
-action\_result\.data | string | 
-action\_result\.summary | string | 
-action\_result\.message | string | 
-summary\.total\_objects | numeric | 
-summary\.total\_objects\_successful | numeric |   
+DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
+--------- | ---- | -------- | --------------
+action_result.status | string |  |   success  failed 
+action_result.parameter.ip | string |  `ip`  |   2.2.2.2 
+action_result.parameter.policy | string |  `fortigate policy`  |   test policy 
+action_result.parameter.vdom | string |  `fortigate vdom`  |   test vdom 
+action_result.data | string |  |  
+action_result.summary | string |  |  
+action_result.message | string |  |  
+summary.total_objects | numeric |  |   1 
+summary.total_objects_successful | numeric |  |   1   
 
 ## action: 'unblock ip'
 Unblock an IP
@@ -287,7 +287,7 @@ Unblock an IP
 Type: **correct**  
 Read only: **False**
 
-The action supports the following format for the <b>ip</b> parameter\:<ul><li>Simple IP\: For example 123\.123\.123\.123</li><li>IP, Subnet mask\: 123\.123\.0\.0 255\.255\.0\.0</li><li>CIDR Notation\: 123\.123\.0\.0/16</li></ul>This action uses a multistep approach to unblock IP\:<ul><li>Re\-configure the <b>policy</b> by removing the Address entry from the list of entries in the destination\. If the Address entry is not present in the list of entries in the destination, action will return successfully with message\- IP is already unblocked\.</li><li>The action does <i>not</i> delete the address entry from the system\.</li><li>If address entry is not found on the system, action will return an error\- Address does not exist\.</li><li>If the policy name is not found, action will return an error\.</li><li>The action will validate the Address entry name, and therefore will only unblock IPs that are added by the <b>block ip</b> action\.</li><li>If the policy name is not IPv4 policy, action will return an error\.</li></ul>
+The action supports the following format for the <b>ip</b> parameter:<ul><li>Simple IP: For example 123.123.123.123</li><li>IP, Subnet mask: 123.123.0.0 255.255.0.0</li><li>CIDR Notation: 123.123.0.0/16</li></ul>This action uses a multistep approach to unblock IP:<ul><li>Re-configure the <b>policy</b> by removing the Address entry from the list of entries in the destination. If the Address entry is not present in the list of entries in the destination, action will return successfully with message- IP is already unblocked.</li><li>The action does <i>not</i> delete the address entry from the system.</li><li>If address entry is not found on the system, action will return an error- Address does not exist.</li><li>If the policy name is not found, action will return an error.</li><li>The action will validate the Address entry name, and therefore will only unblock IPs that are added by the <b>block ip</b> action.</li><li>If the policy name is not IPv4 policy, action will return an error.</li></ul>
 
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
@@ -297,17 +297,17 @@ PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 **vdom** |  optional  | Virtual domain | string |  `fortigate vdom` 
 
 #### Action Output
-DATA PATH | TYPE | CONTAINS
---------- | ---- | --------
-action\_result\.status | string | 
-action\_result\.parameter\.ip | string |  `ip` 
-action\_result\.parameter\.policy | string |  `fortigate policy` 
-action\_result\.parameter\.vdom | string |  `fortigate vdom` 
-action\_result\.data | string | 
-action\_result\.summary | string | 
-action\_result\.message | string | 
-summary\.total\_objects | numeric | 
-summary\.total\_objects\_successful | numeric |   
+DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
+--------- | ---- | -------- | --------------
+action_result.status | string |  |   success  failed 
+action_result.parameter.ip | string |  `ip`  |   2.2.2.2 
+action_result.parameter.policy | string |  `fortigate policy`  |   test policy 
+action_result.parameter.vdom | string |  `fortigate vdom`  |   test vdom 
+action_result.data | string |  |  
+action_result.summary | string |  |  
+action_result.message | string |  |  
+summary.total_objects | numeric |  |   1 
+summary.total_objects_successful | numeric |  |   1   
 
 ## action: 'list policies'
 List configured IPv4 policies
@@ -319,149 +319,149 @@ Read only: **True**
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
 **vdom** |  optional  | Virtual domain | string |  `fortigate vdom` 
-**limit** |  optional  | Maximum number of policies to be fetched \(Default\: 100\) | numeric | 
+**limit** |  optional  | Maximum number of policies to be fetched (Default: 100) | numeric | 
 
 #### Action Output
-DATA PATH | TYPE | CONTAINS
---------- | ---- | --------
-action\_result\.status | string | 
-action\_result\.parameter\.limit | numeric | 
-action\_result\.parameter\.vdom | string |  `fortigate vdom` 
-action\_result\.data\.\*\.action | string | 
-action\_result\.data\.\*\.anti\-replay | string | 
-action\_result\.data\.\*\.application\-list | string | 
-action\_result\.data\.\*\.auth\-cert | string | 
-action\_result\.data\.\*\.auth\-path | string | 
-action\_result\.data\.\*\.auth\-redirect\-addr | string | 
-action\_result\.data\.\*\.auto\-asic\-offload | string | 
-action\_result\.data\.\*\.av\-profile | string | 
-action\_result\.data\.\*\.block\-notification | string | 
-action\_result\.data\.\*\.captive\-portal\-exempt | string | 
-action\_result\.data\.\*\.capture\-packet | string | 
-action\_result\.data\.\*\.casi\-profile | string | 
-action\_result\.data\.\*\.cifs\-profile | string | 
-action\_result\.data\.\*\.comments | string | 
-action\_result\.data\.\*\.custom\-log\-fields | string | 
-action\_result\.data\.\*\.delay\-tcp\-npu\-session | string | 
-action\_result\.data\.\*\.delay\-tcp\-npu\-sessoin | string | 
-action\_result\.data\.\*\.devices | string | 
-action\_result\.data\.\*\.diffserv\-forward | string | 
-action\_result\.data\.\*\.diffserv\-reverse | string | 
-action\_result\.data\.\*\.diffservcode\-forward | string | 
-action\_result\.data\.\*\.diffservcode\-rev | string | 
-action\_result\.data\.\*\.disclaimer | string | 
-action\_result\.data\.\*\.dlp\-sensor | string | 
-action\_result\.data\.\*\.dnsfilter\-profile | string | 
-action\_result\.data\.\*\.dsri | string | 
-action\_result\.data\.\*\.dstaddr\-negate | string | 
-action\_result\.data\.\*\.dstaddr\.\*\.name | string | 
-action\_result\.data\.\*\.dstaddr\.\*\.q\_origin\_key | string | 
-action\_result\.data\.\*\.dstintf\.\*\.name | string | 
-action\_result\.data\.\*\.dstintf\.\*\.q\_origin\_key | string | 
-action\_result\.data\.\*\.email\-collect | string | 
-action\_result\.data\.\*\.emailfilter\-profile | string | 
-action\_result\.data\.\*\.firewall\-session\-dirty | string | 
-action\_result\.data\.\*\.fixedport | string | 
-action\_result\.data\.\*\.fsso | string | 
-action\_result\.data\.\*\.fsso\-agent\-for\-ntlm | string | 
-action\_result\.data\.\*\.geoip\-anycast | string | 
-action\_result\.data\.\*\.global\-label | string | 
-action\_result\.data\.\*\.groups | string | 
-action\_result\.data\.\*\.http\-policy\-redirect | string | 
-action\_result\.data\.\*\.icap\-profile | string | 
-action\_result\.data\.\*\.identity\-based\-route | string | 
-action\_result\.data\.\*\.inbound | string | 
-action\_result\.data\.\*\.inspection\-mode | string | 
-action\_result\.data\.\*\.internet\-service | string | 
-action\_result\.data\.\*\.internet\-service\-negate | string | 
-action\_result\.data\.\*\.internet\-service\-src | string | 
-action\_result\.data\.\*\.internet\-service\-src\-negate | string | 
-action\_result\.data\.\*\.ippool | string | 
-action\_result\.data\.\*\.ips\-sensor | string | 
-action\_result\.data\.\*\.label | string | 
-action\_result\.data\.\*\.learning\-mode | string | 
-action\_result\.data\.\*\.logtraffic | string | 
-action\_result\.data\.\*\.logtraffic\-start | string | 
-action\_result\.data\.\*\.match\-vip | string | 
-action\_result\.data\.\*\.match\-vip\-only | string | 
-action\_result\.data\.\*\.name | string |  `fortigate policy` 
-action\_result\.data\.\*\.nat | string | 
-action\_result\.data\.\*\.natinbound | string | 
-action\_result\.data\.\*\.natip | string | 
-action\_result\.data\.\*\.natoutbound | string | 
-action\_result\.data\.\*\.ntlm | string | 
-action\_result\.data\.\*\.ntlm\-enabled\-browsers | string | 
-action\_result\.data\.\*\.ntlm\-guest | string | 
-action\_result\.data\.\*\.outbound | string | 
-action\_result\.data\.\*\.per\-ip\-shaper | string | 
-action\_result\.data\.\*\.permit\-any\-host | string | 
-action\_result\.data\.\*\.permit\-stun\-host | string | 
-action\_result\.data\.\*\.policyid | numeric | 
-action\_result\.data\.\*\.poolname | string | 
-action\_result\.data\.\*\.profile\-group | string | 
-action\_result\.data\.\*\.profile\-protocol\-options | string | 
-action\_result\.data\.\*\.profile\-type | string | 
-action\_result\.data\.\*\.q\_origin\_key | numeric | 
-action\_result\.data\.\*\.radius\-mac\-auth\-bypass | string | 
-action\_result\.data\.\*\.redirect\-url | string | 
-action\_result\.data\.\*\.replacemsg\-override\-group | string | 
-action\_result\.data\.\*\.reputation\-direction | string | 
-action\_result\.data\.\*\.reputation\-minimum | numeric | 
-action\_result\.data\.\*\.rsso | string | 
-action\_result\.data\.\*\.rtp\-addr | string | 
-action\_result\.data\.\*\.rtp\-nat | string | 
-action\_result\.data\.\*\.scan\-botnet\-connections | string | 
-action\_result\.data\.\*\.schedule | string | 
-action\_result\.data\.\*\.schedule\-timeout | string | 
-action\_result\.data\.\*\.send\-deny\-packet | string | 
-action\_result\.data\.\*\.service\-negate | string | 
-action\_result\.data\.\*\.service\.\*\.name | string | 
-action\_result\.data\.\*\.service\.\*\.q\_origin\_key | string | 
-action\_result\.data\.\*\.session\-ttl | string | 
-action\_result\.data\.\*\.spamfilter\-profile | string | 
-action\_result\.data\.\*\.srcaddr\-negate | string | 
-action\_result\.data\.\*\.srcaddr\.\*\.name | string | 
-action\_result\.data\.\*\.srcaddr\.\*\.q\_origin\_key | string | 
-action\_result\.data\.\*\.srcintf\.\*\.name | string | 
-action\_result\.data\.\*\.srcintf\.\*\.q\_origin\_key | string | 
-action\_result\.data\.\*\.ssh\-filter\-profile | string | 
-action\_result\.data\.\*\.ssh\-policy\-redirect | string | 
-action\_result\.data\.\*\.ssl\-mirror | string | 
-action\_result\.data\.\*\.ssl\-mirror\-intf | string | 
-action\_result\.data\.\*\.ssl\-ssh\-profile | string | 
-action\_result\.data\.\*\.status | string | 
-action\_result\.data\.\*\.tags | string | 
-action\_result\.data\.\*\.tcp\-mss\-receiver | numeric | 
-action\_result\.data\.\*\.tcp\-mss\-sender | numeric | 
-action\_result\.data\.\*\.tcp\-session\-without\-syn | string | 
-action\_result\.data\.\*\.timeout\-send\-rst | string | 
-action\_result\.data\.\*\.tos | string | 
-action\_result\.data\.\*\.tos\-mask | string | 
-action\_result\.data\.\*\.tos\-negate | string | 
-action\_result\.data\.\*\.traffic\-shaper | string | 
-action\_result\.data\.\*\.traffic\-shaper\-reverse | string | 
-action\_result\.data\.\*\.users | string | 
-action\_result\.data\.\*\.utm\-status | string | 
-action\_result\.data\.\*\.uuid | string | 
-action\_result\.data\.\*\.vlan\-cos\-fwd | numeric | 
-action\_result\.data\.\*\.vlan\-cos\-rev | numeric | 
-action\_result\.data\.\*\.vlan\-filter | string | 
-action\_result\.data\.\*\.voip\-profile | string | 
-action\_result\.data\.\*\.vpntunnel | string | 
-action\_result\.data\.\*\.waf\-profile | string | 
-action\_result\.data\.\*\.wanopt | string | 
-action\_result\.data\.\*\.wanopt\-detection | string | 
-action\_result\.data\.\*\.wanopt\-passive\-opt | string | 
-action\_result\.data\.\*\.wanopt\-peer | string | 
-action\_result\.data\.\*\.wanopt\-profile | string | 
-action\_result\.data\.\*\.wccp | string | 
-action\_result\.data\.\*\.webcache | string | 
-action\_result\.data\.\*\.webcache\-https | string | 
-action\_result\.data\.\*\.webfilter\-profile | string | 
-action\_result\.data\.\*\.webproxy\-forward\-server | string | 
-action\_result\.data\.\*\.webproxy\-profile | string | 
-action\_result\.data\.\*\.wsso | string | 
-action\_result\.summary\.total\_policies | numeric | 
-action\_result\.message | string | 
-summary\.total\_objects | numeric | 
-summary\.total\_objects\_successful | numeric | 
+DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
+--------- | ---- | -------- | --------------
+action_result.status | string |  |   success  failed 
+action_result.parameter.limit | numeric |  |   5 
+action_result.parameter.vdom | string |  `fortigate vdom`  |   test vdom 
+action_result.data.\*.action | string |  |   deny 
+action_result.data.\*.anti-replay | string |  |   enable 
+action_result.data.\*.application-list | string |  |  
+action_result.data.\*.auth-cert | string |  |  
+action_result.data.\*.auth-path | string |  |   disable 
+action_result.data.\*.auth-redirect-addr | string |  |  
+action_result.data.\*.auto-asic-offload | string |  |   enable 
+action_result.data.\*.av-profile | string |  |  
+action_result.data.\*.block-notification | string |  |   disable 
+action_result.data.\*.captive-portal-exempt | string |  |   disable 
+action_result.data.\*.capture-packet | string |  |   disable 
+action_result.data.\*.casi-profile | string |  |  
+action_result.data.\*.cifs-profile | string |  |  
+action_result.data.\*.comments | string |  |    (Copy of test10) (Reverse of test10) 
+action_result.data.\*.custom-log-fields | string |  |  
+action_result.data.\*.delay-tcp-npu-session | string |  |   disable 
+action_result.data.\*.delay-tcp-npu-sessoin | string |  |  
+action_result.data.\*.devices | string |  |  
+action_result.data.\*.diffserv-forward | string |  |   disable 
+action_result.data.\*.diffserv-reverse | string |  |   disable 
+action_result.data.\*.diffservcode-forward | string |  |   000000 
+action_result.data.\*.diffservcode-rev | string |  |   000000 
+action_result.data.\*.disclaimer | string |  |   disable 
+action_result.data.\*.dlp-sensor | string |  |  
+action_result.data.\*.dnsfilter-profile | string |  |  
+action_result.data.\*.dsri | string |  |   disable 
+action_result.data.\*.dstaddr-negate | string |  |   disable 
+action_result.data.\*.dstaddr.\*.name | string |  |   all 
+action_result.data.\*.dstaddr.\*.q_origin_key | string |  |   all 
+action_result.data.\*.dstintf.\*.name | string |  |   test_interface 
+action_result.data.\*.dstintf.\*.q_origin_key | string |  |   test_interface 
+action_result.data.\*.email-collect | string |  |   disable 
+action_result.data.\*.emailfilter-profile | string |  |  
+action_result.data.\*.firewall-session-dirty | string |  |   check-all 
+action_result.data.\*.fixedport | string |  |   disable 
+action_result.data.\*.fsso | string |  |   enable 
+action_result.data.\*.fsso-agent-for-ntlm | string |  |  
+action_result.data.\*.geoip-anycast | string |  |   disable 
+action_result.data.\*.global-label | string |  |  
+action_result.data.\*.groups | string |  |  
+action_result.data.\*.http-policy-redirect | string |  |   disable 
+action_result.data.\*.icap-profile | string |  |  
+action_result.data.\*.identity-based-route | string |  |  
+action_result.data.\*.inbound | string |  |   disable 
+action_result.data.\*.inspection-mode | string |  |   flow 
+action_result.data.\*.internet-service | string |  |   disable 
+action_result.data.\*.internet-service-negate | string |  |   disable 
+action_result.data.\*.internet-service-src | string |  |   disable 
+action_result.data.\*.internet-service-src-negate | string |  |   disable 
+action_result.data.\*.ippool | string |  |   disable 
+action_result.data.\*.ips-sensor | string |  |  
+action_result.data.\*.label | string |  |  
+action_result.data.\*.learning-mode | string |  |  
+action_result.data.\*.logtraffic | string |  |   disable 
+action_result.data.\*.logtraffic-start | string |  |   disable 
+action_result.data.\*.match-vip | string |  |   disable 
+action_result.data.\*.match-vip-only | string |  |   disable 
+action_result.data.\*.name | string |  `fortigate policy`  |  
+action_result.data.\*.nat | string |  |   disable 
+action_result.data.\*.natinbound | string |  |   disable 
+action_result.data.\*.natip | string |  |   0.0.0.0 0.0.0.0 
+action_result.data.\*.natoutbound | string |  |   disable 
+action_result.data.\*.ntlm | string |  |   disable 
+action_result.data.\*.ntlm-enabled-browsers | string |  |  
+action_result.data.\*.ntlm-guest | string |  |   disable 
+action_result.data.\*.outbound | string |  |   enable 
+action_result.data.\*.per-ip-shaper | string |  |  
+action_result.data.\*.permit-any-host | string |  |   disable 
+action_result.data.\*.permit-stun-host | string |  |   disable 
+action_result.data.\*.policyid | numeric |  |   12 
+action_result.data.\*.poolname | string |  |  
+action_result.data.\*.profile-group | string |  |  
+action_result.data.\*.profile-protocol-options | string |  |   default 
+action_result.data.\*.profile-type | string |  |   single 
+action_result.data.\*.q_origin_key | numeric |  |   45 
+action_result.data.\*.radius-mac-auth-bypass | string |  |   disable 
+action_result.data.\*.redirect-url | string |  |  
+action_result.data.\*.replacemsg-override-group | string |  |  
+action_result.data.\*.reputation-direction | string |  |   destination 
+action_result.data.\*.reputation-minimum | numeric |  |   0 
+action_result.data.\*.rsso | string |  |   disable 
+action_result.data.\*.rtp-addr | string |  |  
+action_result.data.\*.rtp-nat | string |  |   disable 
+action_result.data.\*.scan-botnet-connections | string |  |  
+action_result.data.\*.schedule | string |  |   always 
+action_result.data.\*.schedule-timeout | string |  |   disable 
+action_result.data.\*.send-deny-packet | string |  |   disable 
+action_result.data.\*.service-negate | string |  |   disable 
+action_result.data.\*.service.\*.name | string |  |   ALL 
+action_result.data.\*.service.\*.q_origin_key | string |  |   ALL 
+action_result.data.\*.session-ttl | string |  |   0 
+action_result.data.\*.spamfilter-profile | string |  |  
+action_result.data.\*.srcaddr-negate | string |  |   disable 
+action_result.data.\*.srcaddr.\*.name | string |  |   all 
+action_result.data.\*.srcaddr.\*.q_origin_key | string |  |   all 
+action_result.data.\*.srcintf.\*.name | string |  |   test_interface 
+action_result.data.\*.srcintf.\*.q_origin_key | string |  |   test_interface 
+action_result.data.\*.ssh-filter-profile | string |  |  
+action_result.data.\*.ssh-policy-redirect | string |  |   disable 
+action_result.data.\*.ssl-mirror | string |  |   disable 
+action_result.data.\*.ssl-mirror-intf | string |  |  
+action_result.data.\*.ssl-ssh-profile | string |  |   no-inspection 
+action_result.data.\*.status | string |  |   disable 
+action_result.data.\*.tags | string |  |  
+action_result.data.\*.tcp-mss-receiver | numeric |  |   0 
+action_result.data.\*.tcp-mss-sender | numeric |  |   0 
+action_result.data.\*.tcp-session-without-syn | string |  |   disable 
+action_result.data.\*.timeout-send-rst | string |  |   disable 
+action_result.data.\*.tos | string |  |   0x00 
+action_result.data.\*.tos-mask | string |  |   0x00 
+action_result.data.\*.tos-negate | string |  |   disable 
+action_result.data.\*.traffic-shaper | string |  |  
+action_result.data.\*.traffic-shaper-reverse | string |  |  
+action_result.data.\*.users | string |  |  
+action_result.data.\*.utm-status | string |  |   disable 
+action_result.data.\*.uuid | string |  |   5axxx9c0-xxxx-51ea-xxxx-89exxxxx073d3 
+action_result.data.\*.vlan-cos-fwd | numeric |  |   255 
+action_result.data.\*.vlan-cos-rev | numeric |  |   255 
+action_result.data.\*.vlan-filter | string |  |  
+action_result.data.\*.voip-profile | string |  |  
+action_result.data.\*.vpntunnel | string |  |  
+action_result.data.\*.waf-profile | string |  |  
+action_result.data.\*.wanopt | string |  |   disable 
+action_result.data.\*.wanopt-detection | string |  |   active 
+action_result.data.\*.wanopt-passive-opt | string |  |   default 
+action_result.data.\*.wanopt-peer | string |  |  
+action_result.data.\*.wanopt-profile | string |  |  
+action_result.data.\*.wccp | string |  |   disable 
+action_result.data.\*.webcache | string |  |   disable 
+action_result.data.\*.webcache-https | string |  |   disable 
+action_result.data.\*.webfilter-profile | string |  |  
+action_result.data.\*.webproxy-forward-server | string |  |  
+action_result.data.\*.webproxy-profile | string |  |  
+action_result.data.\*.wsso | string |  |   enable 
+action_result.summary.total_policies | numeric |  |   2 
+action_result.message | string |  |   Total policies: 6 
+summary.total_objects | numeric |  |   1 
+summary.total_objects_successful | numeric |  |   1 
