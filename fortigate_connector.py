@@ -228,9 +228,9 @@ class FortiGateConnector(BaseConnector):
         try:
             ip, net_size, net_mask = self._break_ip_addr(ip_addr.strip())
         except Exception as e:
-            error_msg = self._get_error_message_from_exception(e)
+            error_message = self._get_error_message_from_exception(e)
             self.debug_print("Validation for ip_addr failed.{}.For valid IP formats,\
-                              please refer to the action's documentation.".format(error_msg))
+                              please refer to the action's documentation.".format(error_message))
             return False
 
         # Validate ip address
@@ -422,10 +422,10 @@ class FortiGateConnector(BaseConnector):
         try:
             resp_json = response.json()
         except Exception as e:
-            error_msg = self._get_error_message_from_exception(e)
+            error_message = self._get_error_message_from_exception(e)
             return RetVal(
                 action_result.set_status(
-                    phantom.APP_ERROR, FORTIGATE_ERROR_UNABLE_TO_PARSE_JSON_RESPONSE.format(error=error_msg)
+                    phantom.APP_ERROR, FORTIGATE_ERROR_UNABLE_TO_PARSE_JSON_RESPONSE.format(error=error_message)
                 ), None
             )
 
@@ -485,17 +485,17 @@ class FortiGateConnector(BaseConnector):
             if endpoint == FORTIGATE_LOGIN:
                 url = "{0}{1}".format(host, endpoint)
         except Exception as e:
-            error_msg = self._get_error_message_from_exception(e)
+            error_message = self._get_error_message_from_exception(e)
             return action_result.set_status(phantom.APP_ERROR, "Please check the asset configuration and action parameters.{}".format(
-                                                error_msg)), None
+                                                error_message)), None
 
         # Make the call
         try:
             response = request_func(url, params=params, data=data, verify=self._verify_server_cert, timeout=(15, 27))
         except Exception as e:
-            error_msg = self._get_error_message_from_exception(e)
+            error_message = self._get_error_message_from_exception(e)
             return action_result.set_status(phantom.APP_ERROR, "Error Connecting to server.{}"
-                                                   .format(error_msg)), rest_res
+                                                   .format(error_message)), rest_res
 
         return self._process_response(response, action_result)
 
@@ -569,7 +569,7 @@ class FortiGateConnector(BaseConnector):
 
                 return action_result.get_status()
 
-        self.save_progress(FORTIGATE_TEST_ENDPOINT_MSG)
+        self.save_progress(FORTIGATE_TEST_ENDPOINT_MESSAGE)
 
         # Querying endpoint to check connection to device
         status, response = self._make_rest_call(FORTIGATE_BLOCKED_IPS, action_result)
@@ -608,8 +608,8 @@ class FortiGateConnector(BaseConnector):
         try:
             ip_addr_obj_name, policy_name, address_create_params, block_params, vdom = self._get_params(param)
         except Exception as e:
-            error_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_SUCCESS, "Unable to create request parameters. {}".format(error_msg))
+            error_message = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_SUCCESS, "Unable to create request parameters. {}".format(error_message))
 
         # Check if address exist
         addr_status, addr_availability = self._is_address_available(ip_addr_obj_name, vdom, action_result)
@@ -687,8 +687,8 @@ class FortiGateConnector(BaseConnector):
         try:
             ip_addr_obj_name, policy_name, _, _, vdom = self._get_params(param)
         except Exception as e:
-            error_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_SUCCESS, "Unable to create request parameters. {}".format(error_msg))
+            error_message = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_SUCCESS, "Unable to create request parameters. {}".format(error_message))
 
         # To get policy id from policy name
         ret_val, policy_id = self._get_policy_id(policy_name, vdom, action_result)
