@@ -588,7 +588,7 @@ class FortiGateConnector(BaseConnector):
             self.save_progress("Test Connectivity Failed")
             return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE)
 
-        self.save_progress(FORTIGATE_TEST_CONN_SUCC)
+        self.save_progress(FORTIGATE_TEST_CONN_SUCCESS)
         return action_result.set_status(phantom.APP_SUCCESS)
 
     # Block IP address

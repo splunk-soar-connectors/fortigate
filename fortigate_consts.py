@@ -41,7 +41,7 @@ FORTIGATE_JSON_SUBNET = 'subnet'
 FORTIGATE_PER_PAGE_DEFAULT_LIMIT = 100
 FORTIGATE_TEST_CONNECTIVITY_MESSAGE = "Logging to device"
 FORTIGATE_TEST_CONN_FAIL = "Connectivity test failed"
-FORTIGATE_TEST_CONN_SUCC = "Connectivity test succeeded"
+FORTIGATE_TEST_CONN_SUCCESS = "Connectivity test succeeded"
 FORTIGATE_TEST_ENDPOINT_MESSAGE = 'Querying an endpoint to validate credentials'
 
 # API error code and response messages constants
