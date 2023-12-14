@@ -53,14 +53,14 @@ class FortiGateConnector(BaseConnector):
 
         # Dictionary containing message for errors in response of API call
         self._error_resp_dict = {
-            FORTIGATE_REST_RESP_BAD_REQUEST: FORTIGATE_REST_RESP_BAD_REQUEST_MSG,
-            FORTIGATE_REST_RESP_NOT_AUTH: FORTIGATE_REST_RESP_NOT_AUTH_MSG,
-            FORTIGATE_REST_RESP_FORBIDDEN: FORTIGATE_REST_RESP_FORBIDDEN_MSG,
-            FORTIGATE_REST_RESP_NOT_ALLOWED: FORTIGATE_REST_RESP_NOT_ALLOWED_MSG,
-            FORTIGATE_REST_RESP_ENTITY_LARGE: FORTIGATE_REST_RESP_ENTITY_LARGE_MSG,
-            FORTIGATE_REST_RESP_FAIL_DEPENDENCY: FORTIGATE_REST_RESP_FAIL_DEPENDENCY_MSG,
-            FORTIGATE_REST_RESP_INTERNAL_ERROR: FORTIGATE_REST_RESP_INTERNAL_ERROR_MSG,
-            FORTIGATE_REST_RESP_TOO_MANY_REQUESTS: FORTIGATE_REST_RESP_TOO_MANY_REQUESTS_MSG
+            FORTIGATE_REST_RESP_BAD_REQUEST: FORTIGATE_REST_RESP_BAD_REQUEST_MESSAGE,
+            FORTIGATE_REST_RESP_NOT_AUTH: FORTIGATE_REST_RESP_NOT_AUTH_MESSAGE,
+            FORTIGATE_REST_RESP_FORBIDDEN: FORTIGATE_REST_RESP_FORBIDDEN_MESSAGE,
+            FORTIGATE_REST_RESP_NOT_ALLOWED: FORTIGATE_REST_RESP_NOT_ALLOWED_MESSAGE,
+            FORTIGATE_REST_RESP_ENTITY_LARGE: FORTIGATE_REST_RESP_ENTITY_LARGE_MESSAGE,
+            FORTIGATE_REST_RESP_FAIL_DEPENDENCY: FORTIGATE_REST_RESP_FAIL_DEPENDENCY_MESSAGE,
+            FORTIGATE_REST_RESP_INTERNAL_ERROR: FORTIGATE_REST_RESP_INTERNAL_ERROR_MESSAGE,
+            FORTIGATE_REST_RESP_TOO_MANY_REQUESTS: FORTIGATE_REST_RESP_TOO_MANY_REQUESTS_MESSAGE
         }
 
         return
@@ -132,7 +132,7 @@ class FortiGateConnector(BaseConnector):
         """
 
         error_code = None
-        error_msg = ERROR_MSG_UNAVAILABLE
+        error_message = ERROR_MESSAGE_UNAVAILABLE
 
         self.error_print("Error occurred.", e)
 
@@ -140,16 +140,16 @@ class FortiGateConnector(BaseConnector):
             if hasattr(e, "args"):
                 if len(e.args) > 1:
                     error_code = e.args[0]
-                    error_msg = e.args[1]
+                    error_message = e.args[1]
                 elif len(e.args) == 1:
-                    error_msg = e.args[0]
+                    error_message = e.args[0]
         except Exception as e:
             self.error_print("Error occurred while fetching exception information. Details: {}".format(str(e)))
 
         if not error_code:
-            error_text = "Error Message: {}".format(error_msg)
+            error_text = "Error Message: {}".format(error_message)
         else:
-            error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
+            error_text = "Error Code: {}. Error Message: {}".format(error_code, error_message)
 
         return error_text
 
@@ -166,16 +166,16 @@ class FortiGateConnector(BaseConnector):
         if parameter is not None:
             try:
                 if not float(parameter).is_integer():
-                    return action_result.set_status(phantom.APP_ERROR, FORTIGATE_VALID_INT_MSG.format(param=key)), None
+                    return action_result.set_status(phantom.APP_ERROR, FORTIGATE_VALID_INT_MESSAGE.format(param=key)), None
 
                 parameter = int(parameter)
             except Exception:
-                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_VALID_INT_MSG.format(param=key)), None
+                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_VALID_INT_MESSAGE.format(param=key)), None
 
             if parameter < 0:
-                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_NON_NEG_INT_MSG.format(param=key)), None
+                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_NON_NEG_INT_MESSAGE.format(param=key)), None
             if not allow_zero and parameter == 0:
-                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_NON_NEG_NON_ZERO_INT_MSG.format(param=key)), None
+                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_NON_NEG_NON_ZERO_INT_MESSAGE.format(param=key)), None
 
         return phantom.APP_SUCCESS, parameter
 
@@ -304,8 +304,8 @@ class FortiGateConnector(BaseConnector):
 
             # If resource not found, its a failure
             if response.get('resource_not_available'):
-                self.debug_print(FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MSG)
-                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MSG), None
+                self.debug_print(FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MESSAGE)
+                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MESSAGE), None
 
             # Fetch data from response
             results = response.get("results")
@@ -451,7 +451,7 @@ class FortiGateConnector(BaseConnector):
         else:
             # All other response codes from Rest call are failures
             # The HTTP response does not return error message in case of unknown error code
-            message = FORTIGATE_ERROR_FROM_SERVER.format(status=status_code, detail=FORTIGATE_REST_RESP_OTHER_ERROR_MSG)
+            message = FORTIGATE_ERROR_FROM_SERVER.format(status=status_code, detail=FORTIGATE_REST_RESP_OTHER_ERROR_MESSAGE)
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
@@ -552,7 +552,7 @@ class FortiGateConnector(BaseConnector):
         """
 
         action_result = self.add_action_result(ActionResult(dict(param)))
-        self.save_progress(FORTIGATE_TEST_CONNECTIVITY_MSG)
+        self.save_progress(FORTIGATE_TEST_CONNECTIVITY_MESSAGE)
         self.save_progress("Configured URL: {}".format(self._device))
 
         if not self._api_key:
@@ -565,7 +565,7 @@ class FortiGateConnector(BaseConnector):
                 # If SSL is enabled and URL configuration has IP address
                 if self._verify_server_cert and (phantom.is_ip(self._device) or self._is_ipv6(self._device)):
                     # The failure could be due to IP provided in URL instead of hostname
-                    self.save_progress(FORTIGATE_TEST_WARN_MSG)
+                    self.save_progress(FORTIGATE_TEST_WARN_MESSAGE)
 
                 return action_result.get_status()
 
@@ -580,7 +580,7 @@ class FortiGateConnector(BaseConnector):
             # If SSL is enabled and URL configuration has IP address
             if self._api_key and self._verify_server_cert and (phantom.is_ip(self._device) or self._is_ipv6(self._device)):
                 # The failure could be due to IP provided in URL instead of hostname
-                self.save_progress(FORTIGATE_TEST_WARN_MSG)
+                self.save_progress(FORTIGATE_TEST_WARN_MESSAGE)
 
             return action_result.get_status()
 
@@ -852,7 +852,7 @@ class FortiGateConnector(BaseConnector):
 
         # If resource not available its a failure
         if json_resp.get('resource_not_available'):
-            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MSG), policy_id
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MESSAGE), policy_id
 
         # Get the list of policies
         policies = json_resp.get("results", [])
@@ -929,8 +929,8 @@ class FortiGateConnector(BaseConnector):
         # Check if resource not available, its an failure scenario
         if json_resp.get('resource_not_available'):
             if self.get_action_identifier() == 'unblock_ip':
-                self.debug_print(FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MSG)
-                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MSG), address_blocked
+                self.debug_print(FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MESSAGE)
+                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MESSAGE), address_blocked
 
             # For block ip, if resource not available indicates that address is not blocked
             address_blocked = False
