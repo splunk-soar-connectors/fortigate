@@ -40,8 +40,8 @@ FORTIGATE_JSON_IP_MASK = 'ipmask'
 FORTIGATE_JSON_SUBNET = 'subnet'
 FORTIGATE_PER_PAGE_DEFAULT_LIMIT = 100
 FORTIGATE_TEST_CONNECTIVITY_MESSAGE = "Logging to device"
-FORTIGATE_TEST_CONN_FAIL = "Connectivity test failed"
-FORTIGATE_TEST_CONN_SUCCESS = "Connectivity test succeeded"
+FORTIGATE_TEST_CONNECTIVITY_FAIL = "Connectivity test failed"
+FORTIGATE_TEST_CONNECTIVITY_SUCCESS = "Connectivity test succeeded"
 FORTIGATE_TEST_ENDPOINT_MESSAGE = 'Querying an endpoint to validate credentials'
 
 # API error code and response messages constants
@@ -72,7 +72,7 @@ FORTIGATE_ERROR_API_UNSUPPORTED_METHOD = "Unsupported method"
 FORTIGATE_ERROR_SERVER_CONNECTION = "Connection failed"
 FORTIGATE_ERROR_FROM_SERVER = 'API failed. Status code: {status}. Detail: {detail}'
 FORTIGATE_ERROR_JSON_PARSE = 'Unable to parse the fields parameter into a dictionary. ' \
-    'Response text - {raw_text}. Error Code: {error_code}. Error Message: {error_msg}'
+    'Response text - {raw_text}. Error Code: {error_code}. Error Message: {error_message}'
 FORTIGATE_ERROR_REQUIRED_CONFIG_PARAMS = 'Please provide either api_key or username and password in the config for authentication'
 FORTIGATE_REST_RESP_OTHER_ERROR_MESSAGE = "Unknown error"
 FORTIGATE_IP_BLOCKED = 'IP blocked successfully'
