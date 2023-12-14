@@ -1,6 +1,6 @@
 # File: fortigate_consts.py
 #
-# Copyright (c) 2017-2022 Splunk Inc.
+# Copyright (c) 2017-2023 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -68,12 +68,12 @@ FORTIGATE_REST_RESP_TOO_MANY_REQUESTS = 429
 FORTIGATE_REST_RESP_TOO_MANY_REQUESTS_MSG = 'Too many requests - the rate limit has been exceeded'
 
 # Error constants
-FORTIGATE_ERR_API_UNSUPPORTED_METHOD = "Unsupported method"
-FORTIGATE_ERR_SERVER_CONNECTION = "Connection failed"
-FORTIGATE_ERR_FROM_SERVER = 'API failed. Status code: {status}. Detail: {detail}'
-FORTIGATE_ERR_JSON_PARSE = 'Unable to parse the fields parameter into a dictionary. ' \
+FORTIGATE_ERROR_API_UNSUPPORTED_METHOD = "Unsupported method"
+FORTIGATE_ERROR_SERVER_CONNECTION = "Connection failed"
+FORTIGATE_ERROR_FROM_SERVER = 'API failed. Status code: {status}. Detail: {detail}'
+FORTIGATE_ERROR_JSON_PARSE = 'Unable to parse the fields parameter into a dictionary. ' \
     'Response text - {raw_text}. Error Code: {error_code}. Error Message: {error_msg}'
-FORTIGATE_ERR_REQUIRED_CONFIG_PARAMS = 'Please provide either api_key or username and password in the config for authentication'
+FORTIGATE_ERROR_REQUIRED_CONFIG_PARAMS = 'Please provide either api_key or username and password in the config for authentication'
 FORTIGATE_REST_RESP_OTHER_ERROR_MSG = "Unknown error"
 FORTIGATE_IP_BLOCKED = 'IP blocked successfully'
 FORTIGATE_IP_UNBLOCKED = 'IP unblocked successfully'
@@ -85,12 +85,13 @@ FORTIGATE_IP_ALREADY_UNBLOCKED = 'IP is already unblocked'
 FORTIGATE_IP_ALREADY_BLOCKED = 'IP is already blocked'
 FORTIGATE_X_CSRFTOKEN_ERROR = "Error occurred while fetching X-CSRFTOKEN from session object. " \
     "Please check the provided credentials in the asset configuration parameters"
-FORTIGATE_ERR_EMPTY_RESPONSE = "Status Code {code}. Empty response and no information in the header."
-FORTIGATE_UNABLE_TO_PARSE_ERR_DETAIL = "Cannot parse error details"
-FORTIGATE_ERR_UNABLE_TO_PARSE_JSON_RESPONSE = "Unable to parse response as JSON. {error}"
+FORTIGATE_ERROR_EMPTY_RESPONSE = "Status Code {code}. Empty response and no information in the header."
+FORTIGATE_UNABLE_TO_PARSE_ERROR_DETAIL = "Cannot parse error details"
+FORTIGATE_ERROR_UNABLE_TO_PARSE_JSON_RESPONSE = "Unable to parse response as JSON. {error}"
 FORTIGATE_UNEXPECTED_SERVER_RESPONSE = "Received unexpected response from the server. Please check the asset configuration parameters"
 
 # Constants relating to 'validate_integer'
 FORTIGATE_VALID_INT_MSG = "Please provide a valid integer value in the '{param}' parameter"
 FORTIGATE_NON_NEG_NON_ZERO_INT_MSG = "Please provide a valid non-zero positive integer value in '{param}' parameter"
 FORTIGATE_NON_NEG_INT_MSG = "Please provide a valid non-negative integer value in the '{param}' parameter"
+ERROR_MSG_UNAVAILABLE = "Error message unavailable. Please check the asset configuration and|or action parameters"

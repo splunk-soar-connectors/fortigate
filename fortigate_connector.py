@@ -1,6 +1,6 @@
 # File: fortigate_connector.py
 #
-# Copyright (c) 2017-2022 Splunk Inc.
+# Copyright (c) 2017-2023 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -82,18 +82,18 @@ class FortiGateConnector(BaseConnector):
         except Exception:
             return self.set_status(phantom.APP_ERROR, "Error occurred while getting the Phantom server's Python major version")
 
-        self._api_username = self._handle_py_ver_compat_for_input_str(self._python_version, config.get(FORTIGATE_JSON_USERNAME))
+        self._api_username = config.get(FORTIGATE_JSON_USERNAME)
         self._api_password = config.get(FORTIGATE_JSON_PASSWORD)
         self._api_key = config.get(FORTIGATE_JSON_API_KEY)
         self._api_vdom = config.get(FORTIGATE_JSON_VDOM, '')
         self._verify_server_cert = config.get(FORTIGATE_JSON_VERIFY_SERVER_CERT, False)
         self.set_validator('ip', self._is_ip)
 
-        self._device = self._handle_py_ver_compat_for_input_str(self._python_version, config[FORTIGATE_JSON_URL])
+        self._device = config[FORTIGATE_JSON_URL]
 
         # Either password or API Key must be provided
         if not self._api_key and (not self._api_username or not self._api_password):
-            return self.set_status(phantom.APP_ERROR, FORTIGATE_ERR_REQUIRED_CONFIG_PARAMS)
+            return self.set_status(phantom.APP_ERROR, FORTIGATE_ERROR_REQUIRED_CONFIG_PARAMS)
 
         # removing single occurence of trailing back-slash or forward-slash
         if self._device.endswith('/'):
@@ -106,8 +106,6 @@ class FortiGateConnector(BaseConnector):
             self._device = self._device.strip('/').strip('\\')
         elif self._device.startswith('\\'):
             self._device = self._device.strip('\\').strip('/')
-
-        self._api_vdom = self._handle_py_ver_compat_for_input_str(self._python_version, self._api_vdom)
 
         return phantom.APP_SUCCESS
 
@@ -127,35 +125,33 @@ class FortiGateConnector(BaseConnector):
         return input_str
 
     def _get_error_message_from_exception(self, e):
-        """ This method is used to get appropriate error message from the exception.
+        """
+        Get appropriate error message from the exception.
         :param e: Exception object
         :return: error message
         """
 
+        error_code = None
+        error_msg = ERROR_MSG_UNAVAILABLE
+
+        self.error_print("Error occurred.", e)
+
         try:
-            if e.args:
+            if hasattr(e, "args"):
                 if len(e.args) > 1:
                     error_code = e.args[0]
                     error_msg = e.args[1]
                 elif len(e.args) == 1:
-                    error_code = "Error code unavailable"
                     error_msg = e.args[0]
-            else:
-                error_code = "Error code unavailable"
-                error_msg = "Error message unavailable. Please check the asset configuration and|or action parameters."
-        except Exception:
-            error_code = "Error code unavailable"
-            error_msg = "Error message unavailable. Please check the asset configuration and|or action parameters."
+        except Exception as e:
+            self.error_print("Error occurred while fetching exception information. Details: {}".format(str(e)))
 
-        try:
-            error_msg = self._handle_py_ver_compat_for_input_str(self._python_version, error_msg)
-        except TypeError:
-            error_msg = "Error occurred while connecting to the Fortigate server. " \
-                "Please check the asset configuration and|or the action parameters."
-        except Exception:
-            error_msg = "Error message unavailable. Please check the asset configuration and|or action parameters."
+        if not error_code:
+            error_text = "Error Message: {}".format(error_msg)
+        else:
+            error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
 
-        return error_code, error_msg
+        return error_text
 
     def _validate_integer(self, action_result, parameter, key, allow_zero=False):
         """
@@ -230,13 +226,11 @@ class FortiGateConnector(BaseConnector):
     def _is_ip(self, ip_addr):
 
         try:
-            ip_addr = self._handle_py_ver_compat_for_input_str(self._python_version, ip_addr)
             ip, net_size, net_mask = self._break_ip_addr(ip_addr.strip())
         except Exception as e:
-            error_code, error_msg = self._get_error_message_from_exception(e)
-            self.debug_print("Validation for ip_addr failed. Error Code:{0}. Error Message:{1}. "
-                             "For valid IP formats, please refer to the action's documentation.".format(
-                                 error_code, error_msg))
+            error_msg = self._get_error_message_from_exception(e)
+            self.debug_print("Validation for ip_addr failed.{}.For valid IP formats,\
+                              please refer to the action's documentation.".format(error_msg))
             return False
 
         # Validate ip address
@@ -378,7 +372,7 @@ class FortiGateConnector(BaseConnector):
 
         return RetVal(
             action_result.set_status(
-                phantom.APP_ERROR, FORTIGATE_ERR_EMPTY_RESPONSE.format(code=response.status_code)
+                phantom.APP_ERROR, FORTIGATE_ERROR_EMPTY_RESPONSE.format(code=response.status_code)
             ), None
         )
 
@@ -406,7 +400,7 @@ class FortiGateConnector(BaseConnector):
             split_lines = [x.strip() for x in split_lines if x.strip()]
             error_text = '\n'.join(split_lines)
         except Exception:
-            error_text = FORTIGATE_UNABLE_TO_PARSE_ERR_DETAIL
+            error_text = FORTIGATE_UNABLE_TO_PARSE_ERROR_DETAIL
 
         if not error_text:
             error_text = "Empty response and no information received"
@@ -431,16 +425,16 @@ class FortiGateConnector(BaseConnector):
             error_msg = self._get_error_message_from_exception(e)
             return RetVal(
                 action_result.set_status(
-                    phantom.APP_ERROR, FORTIGATE_ERR_UNABLE_TO_PARSE_JSON_RESPONSE.format(error=error_msg)
+                    phantom.APP_ERROR, FORTIGATE_ERROR_UNABLE_TO_PARSE_JSON_RESPONSE.format(error=error_msg)
                 ), None
             )
 
         if status_code in self._error_resp_dict:
-            self.debug_print(FORTIGATE_ERR_FROM_SERVER.format(status=status_code,
+            self.debug_print(FORTIGATE_ERROR_FROM_SERVER.format(status=status_code,
                                                               detail=self._error_resp_dict[status_code]))
             # set the action_result status to error, the handler function
             # will most probably return as is
-            return RetVal(action_result.set_status(phantom.APP_ERROR, FORTIGATE_ERR_FROM_SERVER.format(status=status_code,
+            return RetVal(action_result.set_status(phantom.APP_ERROR, FORTIGATE_ERROR_FROM_SERVER.format(status=status_code,
                                              detail=self._error_resp_dict[status_code])), resp_json)
 
         if status_code == FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND:
@@ -457,7 +451,7 @@ class FortiGateConnector(BaseConnector):
         else:
             # All other response codes from Rest call are failures
             # The HTTP response does not return error message in case of unknown error code
-            message = FORTIGATE_ERR_FROM_SERVER.format(status=status_code, detail=FORTIGATE_REST_RESP_OTHER_ERROR_MSG)
+            message = FORTIGATE_ERROR_FROM_SERVER.format(status=status_code, detail=FORTIGATE_REST_RESP_OTHER_ERROR_MSG)
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
@@ -480,10 +474,10 @@ class FortiGateConnector(BaseConnector):
         try:
             request_func = getattr(requests, method) if self._api_key else getattr(self._sess_obj, method)
         except Exception:
-            self.debug_print(FORTIGATE_ERR_API_UNSUPPORTED_METHOD.format(method=method))
+            self.debug_print(FORTIGATE_ERROR_API_UNSUPPORTED_METHOD.format(method=method))
             # set the action_result status to error, the handler function
             # will most probably return as is
-            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_ERR_API_UNSUPPORTED_METHOD,
+            return action_result.set_status(phantom.APP_ERROR, FORTIGATE_ERROR_API_UNSUPPORTED_METHOD,
                                             method=str(method)), rest_res
 
         try:
@@ -491,18 +485,17 @@ class FortiGateConnector(BaseConnector):
             if endpoint == FORTIGATE_LOGIN:
                 url = "{0}{1}".format(host, endpoint)
         except Exception as e:
-            error_code, error_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_ERROR, "Please check the asset configuration and action parameters. "
-                                            "Error Code: {0}. Error Message: {1}".format(
-                                                error_code, error_msg)), None
+            error_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, "Please check the asset configuration and action parameters.{}".format(
+                                                error_msg)), None
 
         # Make the call
         try:
             response = request_func(url, params=params, data=data, verify=self._verify_server_cert, timeout=(15, 27))
         except Exception as e:
-            error_code, error_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Error Code: {0}. Error Message: {1}"
-                                                   .format(error_code, error_msg)), rest_res
+            error_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, "Error Connecting to server.{}"
+                                                   .format(error_msg)), rest_res
 
         return self._process_response(response, action_result)
 
@@ -512,7 +505,7 @@ class FortiGateConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         # fetch vdom
-        vdom = self._handle_py_ver_compat_for_input_str(self._python_version, param.get(FORTIGATE_JSON_VDOM, ''))
+        vdom = param.get(FORTIGATE_JSON_VDOM, '')
         if not vdom and self._api_vdom:
             vdom = self._api_vdom
 
@@ -615,9 +608,8 @@ class FortiGateConnector(BaseConnector):
         try:
             ip_addr_obj_name, policy_name, address_create_params, block_params, vdom = self._get_params(param)
         except Exception as e:
-            error_code, error_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_SUCCESS, "Unable to create request parameters. Error Code:{0}. "
-                                            "Error Message:{1}".format(error_code, error_msg))
+            error_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_SUCCESS, "Unable to create request parameters. {}".format(error_msg))
 
         # Check if address exist
         addr_status, addr_availability = self._is_address_available(ip_addr_obj_name, vdom, action_result)
@@ -695,9 +687,8 @@ class FortiGateConnector(BaseConnector):
         try:
             ip_addr_obj_name, policy_name, _, _, vdom = self._get_params(param)
         except Exception as e:
-            error_code, error_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_SUCCESS, "Unable to create request parameters. Error Code:{0}. "
-                                            "Error Message:{1}".format(error_code, error_msg))
+            error_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_SUCCESS, "Unable to create request parameters. {}".format(error_msg))
 
         # To get policy id from policy name
         ret_val, policy_id = self._get_policy_id(policy_name, vdom, action_result)
@@ -806,10 +797,10 @@ class FortiGateConnector(BaseConnector):
     def _get_params(self, param):
 
         # Mandatory input parameter
-        ip_addr = self._handle_py_ver_compat_for_input_str(self._python_version, param[FORTIGATE_JSON_IP])
-        policy = self._handle_py_ver_compat_for_input_str(self._python_version, param[FORTIGATE_JSON_POLICY])
+        ip_addr = param[FORTIGATE_JSON_IP]
+        policy = param[FORTIGATE_JSON_POLICY]
 
-        vdom = self._handle_py_ver_compat_for_input_str(self._python_version, param.get(FORTIGATE_JSON_VDOM, ''))
+        vdom = param.get(FORTIGATE_JSON_VDOM, '')
 
         if not vdom and self._api_vdom:
             vdom = self._api_vdom
