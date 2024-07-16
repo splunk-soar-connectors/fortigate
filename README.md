@@ -265,6 +265,7 @@ The action supports the following format for the <b>ip</b> parameter:<ul><li>Sim
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
 **ip** |  required  | IP to block | string |  `ip` 
+**address_type** |  optional  | Address type of IP (srcaddr, dstaddr) | string | 
 **policy** |  required  | IPv4 policy name | string |  `fortigate policy` 
 **vdom** |  optional  | Virtual domain | string |  `fortigate vdom` 
 
@@ -273,6 +274,7 @@ DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
 --------- | ---- | -------- | --------------
 action_result.status | string |  |   success  failed 
 action_result.parameter.ip | string |  `ip`  |   2.2.2.2 
+action_result.parameter.address_type | string |  |   dstaddr 
 action_result.parameter.policy | string |  `fortigate policy`  |   test policy 
 action_result.parameter.vdom | string |  `fortigate vdom`  |   test vdom 
 action_result.data | string |  |  
@@ -293,6 +295,7 @@ The action supports the following format for the <b>ip</b> parameter:<ul><li>Sim
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
 **ip** |  required  | IP to unblock | string |  `ip` 
+**address_type** |  optional  | Address type of IP (srcaddr, dstaddr) | string | 
 **policy** |  required  | IPv4 policy name | string |  `fortigate policy` 
 **vdom** |  optional  | Virtual domain | string |  `fortigate vdom` 
 
@@ -301,6 +304,7 @@ DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
 --------- | ---- | -------- | --------------
 action_result.status | string |  |   success  failed 
 action_result.parameter.ip | string |  `ip`  |   2.2.2.2 
+action_result.parameter.address_type | string |  |   dstaddr 
 action_result.parameter.policy | string |  `fortigate policy`  |   test policy 
 action_result.parameter.vdom | string |  `fortigate vdom`  |   test vdom 
 action_result.data | string |  |  

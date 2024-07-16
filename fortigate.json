@@ -83,10 +83,17 @@
                     ],
                     "primary": true
                 },
+                "address_type": {
+                    "default": "dstaddr",
+                    "description": "Address type of IP (srcaddr, dstaddr)",
+                    "order": 1,
+                    "data_type": "string",
+                    "primary": true
+                },
                 "policy": {
                     "required": true,
                     "description": "IPv4 policy name",
-                    "order": 1,
+                    "order": 2,
                     "data_type": "string",
                     "contains": [
                         "fortigate policy"
@@ -94,7 +101,7 @@
                     "primary": true
                 },
                 "vdom": {
-                    "order": 2,
+                    "order": 3,
                     "data_type": "string",
                     "description": "Virtual domain",
                     "primary": true,
@@ -136,6 +143,15 @@
                 },
                 {
                     "column_order": 1,
+                    "data_path": "action_result.parameter.address_type",
+                    "data_type": "string",
+                    "column_name": "Address Type",
+                    "example_values": [
+                        "dstaddr"
+                    ]
+                },
+                {
+                    "column_order": 2,
                     "contains": [
                         "fortigate policy"
                     ],
@@ -156,7 +172,7 @@
                         "test vdom"
                     ],
                     "column_name": "Vdom",
-                    "column_order": 2
+                    "column_order": 3
                 },
                 {
                     "data_path": "action_result.data",
@@ -206,10 +222,17 @@
                     ],
                     "primary": true
                 },
+                "address_type": {
+                    "default": "dstaddr",
+                    "description": "Address type of IP (srcaddr, dstaddr)",
+                    "order": 1,
+                    "data_type": "string",
+                    "primary": true
+                },
                 "policy": {
                     "required": true,
                     "description": "IPv4 policy name",
-                    "order": 1,
+                    "order": 2,
                     "data_type": "string",
                     "contains": [
                         "fortigate policy"
@@ -217,7 +240,7 @@
                     "primary": true
                 },
                 "vdom": {
-                    "order": 2,
+                    "order": 3,
                     "data_type": "string",
                     "description": "Virtual domain",
                     "primary": true,
@@ -258,7 +281,16 @@
                     ]
                 },
                 {
-                    "column_order": 1,
+                    "column_order": 2,
+                    "data_path": "action_result.parameter.address_type",
+                    "data_type": "string",
+                    "column_name": "Address Type",
+                    "example_values": [
+                        "dstaddr"
+                    ]
+                },
+                {
+                    "column_order": 2,
                     "contains": [
                         "fortigate policy"
                     ],
@@ -279,7 +311,7 @@
                         "test vdom"
                     ],
                     "column_name": "Vdom",
-                    "column_order": 2
+                    "column_order": 3
                 },
                 {
                     "data_path": "action_result.data",
