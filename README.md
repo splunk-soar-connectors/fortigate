@@ -110,8 +110,15 @@ application. Below are the explanation and usage of all those parameters.
 
         -   This parameter specifies the IP which is to be blocked. It is a required parameter.
 
+    
+
+
+    -   **<u>Action Parameter</u> - Address Type**
+
+        -   This parameter specifies the type of address of the IP to be blocked. Source (srcaddr) or Destination (dstaddr) IP. The default is a destination address (dstaddr).
           
-          
+
+
 
     -   **<u>Action Parameter</u> - Policy**
 
@@ -157,9 +164,16 @@ application. Below are the explanation and usage of all those parameters.
         -   This parameter specifies the IP which is to be unblocked. It is a required parameter.
             The IP value should be present in the list of blocked IPs otherwise action returns
             'already unblocked' success message.
+          
+              
 
+    
+    -   **<u>Action Parameter</u> - Address Type**
+
+        -   This parameter specifies the type of address of the IP to be blocked. Source (srcaddr) or Destination (dstaddr) IP. The default is a destination address (dstaddr).
           
-          
+
+
 
     -   **<u>Action Parameter</u> - Policy**
 
@@ -265,7 +279,7 @@ The action supports the following format for the <b>ip</b> parameter:<ul><li>Sim
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
 **ip** |  required  | IP to block | string |  `ip` 
-**address_type** |  optional  | Address type of IP (srcaddr, dstaddr) | string | 
+**address_type** |  optional  | Address type of IP (source, destination) | string | 
 **policy** |  required  | IPv4 policy name | string |  `fortigate policy` 
 **vdom** |  optional  | Virtual domain | string |  `fortigate vdom` 
 
@@ -295,7 +309,7 @@ The action supports the following format for the <b>ip</b> parameter:<ul><li>Sim
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
 **ip** |  required  | IP to unblock | string |  `ip` 
-**address_type** |  optional  | Address type of IP (srcaddr, dstaddr) | string | 
+**address_type** |  optional  | Address type of IP (source, destination) | string | 
 **policy** |  required  | IPv4 policy name | string |  `fortigate policy` 
 **vdom** |  optional  | Virtual domain | string |  `fortigate vdom` 
 

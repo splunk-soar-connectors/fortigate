@@ -85,7 +85,11 @@
                 },
                 "address_type": {
                     "default": "dstaddr",
-                    "description": "Address type of IP (srcaddr, dstaddr)",
+                    "value_list": [
+                        "srcaddr",
+                        "dstaddr"
+                    ],
+                    "description": "Address type of IP (source, destination)",
                     "order": 1,
                     "data_type": "string",
                     "primary": true
@@ -224,7 +228,11 @@
                 },
                 "address_type": {
                     "default": "dstaddr",
-                    "description": "Address type of IP (srcaddr, dstaddr)",
+                    "value_list": [
+                        "srcaddr",
+                        "dstaddr"
+                    ],
+                    "description": "Address type of IP (source, destination)",
                     "order": 1,
                     "data_type": "string",
                     "primary": true
