@@ -6,7 +6,7 @@ Connector Version: 2.2.2
 Product Vendor: Fortinet  
 Product Name: FortiGate  
 Product Version Supported (regex): ".\*"  
-Minimum Product Version: 5.2.0  
+Minimum Product Version: 6.2.1  
 
 This app supports a variety of containment and investigative actions on the FortiGate Firewall
 
@@ -286,10 +286,10 @@ PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 #### Action Output
 DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
 --------- | ---- | -------- | --------------
-action_result.status | string |  |   success  failed 
 action_result.parameter.ip | string |  `ip`  |   2.2.2.2 
 action_result.parameter.address_type | string |  |   dstaddr 
 action_result.parameter.policy | string |  `fortigate policy`  |   test policy 
+action_result.status | string |  |   success  failed 
 action_result.parameter.vdom | string |  `fortigate vdom`  |   test vdom 
 action_result.data | string |  |  
 action_result.summary | string |  |  
@@ -316,10 +316,10 @@ PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 #### Action Output
 DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
 --------- | ---- | -------- | --------------
-action_result.status | string |  |   success  failed 
 action_result.parameter.ip | string |  `ip`  |   2.2.2.2 
 action_result.parameter.address_type | string |  |   dstaddr 
 action_result.parameter.policy | string |  `fortigate policy`  |   test policy 
+action_result.status | string |  |   success  failed 
 action_result.parameter.vdom | string |  `fortigate vdom`  |   test vdom 
 action_result.data | string |  |  
 action_result.summary | string |  |  
