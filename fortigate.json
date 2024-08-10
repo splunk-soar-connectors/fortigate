@@ -5,14 +5,14 @@
     "publisher": "Splunk",
     "package_name": "phantom_fortigate",
     "type": "firewall",
-    "license": "Copyright (c) 2017-2023 Splunk Inc.",
+    "license": "Copyright (c) 2017-2024 Splunk Inc.",
     "main_module": "fortigate_connector.py",
     "app_version": "2.2.2",
     "utctime_updated": "2022-01-29T01:12:44.000000Z",
     "product_vendor": "Fortinet",
     "product_name": "FortiGate",
     "product_version_regex": ".*",
-    "min_phantom_version": "5.2.0",
+    "min_phantom_version": "6.2.1",
     "python_version": "3",
     "fips_compliant": true,
     "latest_tested_versions": [
@@ -124,16 +124,6 @@
             },
             "output": [
                 {
-                    "column_order": 3,
-                    "data_path": "action_result.status",
-                    "data_type": "string",
-                    "column_name": "Status",
-                    "example_values": [
-                        "success",
-                        "failed"
-                    ]
-                },
-                {
                     "column_order": 0,
                     "contains": [
                         "ip"
@@ -164,6 +154,16 @@
                     "column_name": "Policy",
                     "example_values": [
                         "test policy"
+                    ]
+                },
+                {
+                    "column_order": 3,
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "column_name": "Status",
+                    "example_values": [
+                        "success",
+                        "failed"
                     ]
                 },
                 {
@@ -267,16 +267,6 @@
             },
             "output": [
                 {
-                    "column_order": 3,
-                    "data_path": "action_result.status",
-                    "data_type": "string",
-                    "column_name": "Status",
-                    "example_values": [
-                        "success",
-                        "failed"
-                    ]
-                },
-                {
                     "column_order": 0,
                     "contains": [
                         "ip"
@@ -307,6 +297,16 @@
                     "column_name": "Policy",
                     "example_values": [
                         "test policy"
+                    ]
+                },
+                {
+                    "column_order": 3,
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "column_name": "Status",
+                    "example_values": [
+                        "success",
+                        "failed"
                     ]
                 },
                 {
