@@ -1,6 +1,6 @@
 # File: fortigate_connector.py
 #
-# Copyright (c) 2017-2023 Splunk Inc.
+# Copyright (c) 2017-2024 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -606,10 +606,17 @@ class FortiGateConnector(BaseConnector):
 
         # To get parameters
         try:
-            ip_addr_obj_name, policy_name, address_create_params, block_params, vdom = self._get_params(param)
+            ip_addr_obj_name, address_type, policy_name, address_create_params, block_params, vdom = self._get_params(param)
         except Exception as e:
             error_message = self._get_error_message_from_exception(e)
             return action_result.set_status(phantom.APP_SUCCESS, "Unable to create request parameters. {}".format(error_message))
+
+        # Ensure valid address type
+        if address_type not in [FORTIGATE_SRCADDR_TYPE, FORTIGATE_DSTADDR_TYPE]:
+            return action_result.set_status(
+                phantom.APP_ERROR,
+                "Invalid address type '{}', should be 'srcaddr' or 'dstaddr'".format(address_type)
+            )
 
         # Check if address exist
         addr_status, addr_availability = self._is_address_available(ip_addr_obj_name, vdom, action_result)
@@ -643,9 +650,9 @@ class FortiGateConnector(BaseConnector):
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
-        dstaddr_status, address_blocked = self._is_address_blocked(ip_addr_obj_name, policy_id, vdom, action_result)
+        addr_status, address_blocked = self._is_address_blocked(ip_addr_obj_name, address_type, policy_id, vdom, action_result)
 
-        if phantom.is_fail(dstaddr_status):
+        if phantom.is_fail(addr_status):
             return action_result.get_status()
 
         # If address already blocked
@@ -660,8 +667,10 @@ class FortiGateConnector(BaseConnector):
 
         # Block the address
         # Add the address entry to policy's destination
-        status, response = self._make_rest_call(FORTIGATE_BLOCK_IP.format(policy_id=policy_id),
-                                                action_result, data=json.dumps(block_params), method="post", params=param)
+        status, response = self._make_rest_call(
+            FORTIGATE_BLOCK_IP.format(policy_id=policy_id, address_type=address_type),
+            action_result, data=json.dumps(block_params), method="post", params=param
+        )
 
         if phantom.is_fail(status):
             return action_result.get_status()
@@ -685,10 +694,17 @@ class FortiGateConnector(BaseConnector):
 
         # To get parameters
         try:
-            ip_addr_obj_name, policy_name, _, _, vdom = self._get_params(param)
+            ip_addr_obj_name, address_type, policy_name, _, _, vdom = self._get_params(param)
         except Exception as e:
             error_message = self._get_error_message_from_exception(e)
             return action_result.set_status(phantom.APP_SUCCESS, "Unable to create request parameters. {}".format(error_message))
+
+        # Ensure valid address type
+        if address_type not in [FORTIGATE_SRCADDR_TYPE, FORTIGATE_DSTADDR_TYPE]:
+            return action_result.set_status(
+                phantom.APP_ERROR,
+                "Invalid address type '{}', should be 'srcaddr' or 'dstaddr'".format(address_type)
+            )
 
         # To get policy id from policy name
         ret_val, policy_id = self._get_policy_id(policy_name, vdom, action_result)
@@ -715,18 +731,18 @@ class FortiGateConnector(BaseConnector):
             param = None
 
         # Check if address entry is configured in destination of policy
-        dstaddr_status, dstaddr_resp = self._make_rest_call(FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id,
-                            ip=ip_addr_obj_name), action_result, params=param)
+        addr_status, addr_resp = self._make_rest_call(FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id,
+                            address_type=address_type, ip=ip_addr_obj_name), action_result, params=param)
 
-        if phantom.is_fail(dstaddr_status):
+        if phantom.is_fail(addr_status):
             return action_result.get_status()
 
-        if not dstaddr_resp:
+        if not addr_resp:
             return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE)
 
         # If resource not available, indicates that address entry is
         # not configured in policy as destination
-        if dstaddr_resp.get('resource_not_available'):
+        if addr_resp.get('resource_not_available'):
             self.debug_print(FORTIGATE_IP_ALREADY_UNBLOCKED)
             return action_result.set_status(phantom.APP_SUCCESS, FORTIGATE_IP_ALREADY_UNBLOCKED)
 
@@ -737,8 +753,10 @@ class FortiGateConnector(BaseConnector):
             param = None
 
         # Unblock an IP
-        status, response = self._make_rest_call(FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id, ip=ip_addr_obj_name),
-                                         action_result, method="delete", params=param)
+        status, response = self._make_rest_call(
+            FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id, address_type=address_type, ip=ip_addr_obj_name),
+            action_result, method="delete", params=param
+        )
 
         if phantom.is_fail(status):
             return action_result.get_status()
@@ -800,6 +818,9 @@ class FortiGateConnector(BaseConnector):
         ip_addr = param[FORTIGATE_JSON_IP]
         policy = param[FORTIGATE_JSON_POLICY]
 
+        # Need to check if exists due to existing playbook actions without the param (original dstaddr default)
+        address_type = param.get(FORTIGATE_JSON_ADDRESS_TYPE, FORTIGATE_DSTADDR_TYPE)
+
         vdom = param.get(FORTIGATE_JSON_VDOM, '')
 
         if not vdom and self._api_vdom:
@@ -821,7 +842,7 @@ class FortiGateConnector(BaseConnector):
             FORTIGATE_JSON_NAME: ip_addr_obj_name
         }
 
-        return ip_addr_obj_name, policy, address_create_params, block_params, vdom
+        return ip_addr_obj_name, address_type, policy, address_create_params, block_params, vdom
 
     # Get the list of matching policies
     # Check if multiple policy exist or no policy available
@@ -906,7 +927,7 @@ class FortiGateConnector(BaseConnector):
         return phantom.APP_SUCCESS, True
 
     # To check if address already blocked
-    def _is_address_blocked(self, ip_addr_obj_name, policy_id, vdom, action_result):
+    def _is_address_blocked(self, ip_addr_obj_name, address_type, policy_id, vdom, action_result):
 
         address_blocked = None
 
@@ -917,7 +938,7 @@ class FortiGateConnector(BaseConnector):
             param = None
 
         ret_code, json_resp = self._make_rest_call(FORTIGATE_GET_BLOCKED_IP.format(policy_id=policy_id,
-                                ip=ip_addr_obj_name), action_result, params=param)
+                                address_type=address_type, ip=ip_addr_obj_name), action_result, params=param)
 
         # Something went wrong
         if phantom.is_fail(ret_code):

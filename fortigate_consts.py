@@ -1,6 +1,6 @@
 # File: fortigate_consts.py
 #
-# Copyright (c) 2017-2023 Splunk Inc.
+# Copyright (c) 2017-2024 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ FORTIGATE_LOGOUT = "/logout"
 FORTIGATE_ADD_ADDRESS = "/cmdb/firewall/address"
 FORTIGATE_GET_ADDRESSES = "/cmdb/firewall/address/{ip}"
 FORTIGATE_GET_POLICY = "/cmdb/firewall/policy"
-FORTIGATE_BLOCK_IP = "/cmdb/firewall/policy/{policy_id}/dstaddr"
-FORTIGATE_GET_BLOCKED_IP = "/cmdb/firewall/policy/{policy_id}/dstaddr/{ip}"
+FORTIGATE_BLOCK_IP = "/cmdb/firewall/policy/{policy_id}/{address_type}"
+FORTIGATE_GET_BLOCKED_IP = "/cmdb/firewall/policy/{policy_id}/{address_type}/{ip}"
 FORTIGATE_BLOCKED_IPS = "/monitor/user/banned/select/"
 FORTIGATE_LIST_POLICIES = "/cmdb/firewall/policy/"
 
@@ -33,12 +33,15 @@ FORTIGATE_JSON_URL = "url"
 FORTIGATE_JSON_VDOM = "vdom"
 FORTIGATE_JSON_VERIFY_SERVER_CERT = "verify_server_cert"
 FORTIGATE_JSON_IP = "ip"
+FORTIGATE_JSON_ADDRESS_TYPE = "address_type"
 FORTIGATE_JSON_POLICY = "policy"
 FORTIGATE_JSON_NAME = 'name'
 FORTIGATE_JSON_TYPE = 'type'
 FORTIGATE_JSON_IP_MASK = 'ipmask'
 FORTIGATE_JSON_SUBNET = 'subnet'
 FORTIGATE_PER_PAGE_DEFAULT_LIMIT = 100
+FORTIGATE_SRCADDR_TYPE = "srcaddr"
+FORTIGATE_DSTADDR_TYPE = "dstaddr"
 FORTIGATE_TEST_CONNECTIVITY_MESSAGE = "Logging to device"
 FORTIGATE_TEST_CONNECTIVITY_FAIL = "Connectivity test failed"
 FORTIGATE_TEST_CONNECTIVITY_SUCCESS = "Connectivity test succeeded"

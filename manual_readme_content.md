@@ -1,5 +1,5 @@
 [comment]: # " File: README.md"
-[comment]: # "  Copyright (c) 2017-2023 Splunk Inc."
+[comment]: # "  Copyright (c) 2017-2024 Splunk Inc."
 [comment]: # ""
 [comment]: # "Licensed under the Apache License, Version 2.0 (the 'License');"
 [comment]: # "you may not use this file except in compliance with the License."
@@ -98,8 +98,15 @@ application. Below are the explanation and usage of all those parameters.
 
         -   This parameter specifies the IP which is to be blocked. It is a required parameter.
 
+    
+
+
+    -   **<u>Action Parameter</u> - Address Type**
+
+        -   This parameter specifies the type of address of the IP to be blocked. Source (srcaddr) or Destination (dstaddr) IP. The default is a destination address (dstaddr).
           
-          
+
+
 
     -   **<u>Action Parameter</u> - Policy**
 
@@ -145,9 +152,16 @@ application. Below are the explanation and usage of all those parameters.
         -   This parameter specifies the IP which is to be unblocked. It is a required parameter.
             The IP value should be present in the list of blocked IPs otherwise action returns
             'already unblocked' success message.
+          
+              
 
+    
+    -   **<u>Action Parameter</u> - Address Type**
+
+        -   This parameter specifies the type of address of the IP to be blocked. Source (srcaddr) or Destination (dstaddr) IP. The default is a destination address (dstaddr).
           
-          
+
+
 
     -   **<u>Action Parameter</u> - Policy**
 
