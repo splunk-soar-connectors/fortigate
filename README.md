@@ -2,16 +2,16 @@
 # FortiGate
 
 Publisher: Splunk  
-Connector Version: 2.2.2  
+Connector Version: 2.2.3  
 Product Vendor: Fortinet  
 Product Name: FortiGate  
 Product Version Supported (regex): ".\*"  
-Minimum Product Version: 5.2.0  
+Minimum Product Version: 6.2.1  
 
 This app supports a variety of containment and investigative actions on the FortiGate Firewall
 
 [comment]: # " File: README.md"
-[comment]: # "  Copyright (c) 2017-2023 Splunk Inc."
+[comment]: # "  Copyright (c) 2017-2024 Splunk Inc."
 [comment]: # ""
 [comment]: # "Licensed under the Apache License, Version 2.0 (the 'License');"
 [comment]: # "you may not use this file except in compliance with the License."
@@ -110,8 +110,15 @@ application. Below are the explanation and usage of all those parameters.
 
         -   This parameter specifies the IP which is to be blocked. It is a required parameter.
 
+    
+
+
+    -   **<u>Action Parameter</u> - Address Type**
+
+        -   This parameter specifies the type of address of the IP to be blocked. Source (srcaddr) or Destination (dstaddr) IP. The default is a destination address (dstaddr).
           
-          
+
+
 
     -   **<u>Action Parameter</u> - Policy**
 
@@ -157,9 +164,16 @@ application. Below are the explanation and usage of all those parameters.
         -   This parameter specifies the IP which is to be unblocked. It is a required parameter.
             The IP value should be present in the list of blocked IPs otherwise action returns
             'already unblocked' success message.
+          
+              
 
+    
+    -   **<u>Action Parameter</u> - Address Type**
+
+        -   This parameter specifies the type of address of the IP to be blocked. Source (srcaddr) or Destination (dstaddr) IP. The default is a destination address (dstaddr).
           
-          
+
+
 
     -   **<u>Action Parameter</u> - Policy**
 
@@ -265,15 +279,17 @@ The action supports the following format for the <b>ip</b> parameter:<ul><li>Sim
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
 **ip** |  required  | IP to block | string |  `ip` 
+**address_type** |  optional  | Address type of IP (source, destination) | string | 
 **policy** |  required  | IPv4 policy name | string |  `fortigate policy` 
 **vdom** |  optional  | Virtual domain | string |  `fortigate vdom` 
 
 #### Action Output
 DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
 --------- | ---- | -------- | --------------
-action_result.status | string |  |   success  failed 
 action_result.parameter.ip | string |  `ip`  |   2.2.2.2 
+action_result.parameter.address_type | string |  |   dstaddr 
 action_result.parameter.policy | string |  `fortigate policy`  |   test policy 
+action_result.status | string |  |   success  failed 
 action_result.parameter.vdom | string |  `fortigate vdom`  |   test vdom 
 action_result.data | string |  |  
 action_result.summary | string |  |  
@@ -293,15 +309,17 @@ The action supports the following format for the <b>ip</b> parameter:<ul><li>Sim
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
 **ip** |  required  | IP to unblock | string |  `ip` 
+**address_type** |  optional  | Address type of IP (source, destination) | string | 
 **policy** |  required  | IPv4 policy name | string |  `fortigate policy` 
 **vdom** |  optional  | Virtual domain | string |  `fortigate vdom` 
 
 #### Action Output
 DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
 --------- | ---- | -------- | --------------
-action_result.status | string |  |   success  failed 
 action_result.parameter.ip | string |  `ip`  |   2.2.2.2 
+action_result.parameter.address_type | string |  |   dstaddr 
 action_result.parameter.policy | string |  `fortigate policy`  |   test policy 
+action_result.status | string |  |   success  failed 
 action_result.parameter.vdom | string |  `fortigate vdom`  |   test vdom 
 action_result.data | string |  |  
 action_result.summary | string |  |  
