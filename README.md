@@ -1,9 +1,9 @@
 # FortiGate
 
-Publisher: Splunk \
-Connector Version: 2.2.3 \
-Product Vendor: Fortinet \
-Product Name: FortiGate \
+Publisher: Splunk <br>
+Connector Version: 2.2.3 <br>
+Product Vendor: Fortinet <br>
+Product Name: FortiGate <br>
 Minimum Product Version: 6.2.1
 
 This app supports a variety of containment and investigative actions on the FortiGate Firewall
@@ -206,16 +206,16 @@ VARIABLE | REQUIRED | TYPE | DESCRIPTION
 
 ### Supported Actions
 
-[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity \
-[block ip](#action-block-ip) - Block an IP \
-[unblock ip](#action-unblock-ip) - Unblock an IP \
+[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity <br>
+[block ip](#action-block-ip) - Block an IP <br>
+[unblock ip](#action-unblock-ip) - Unblock an IP <br>
 [list policies](#action-list-policies) - List configured IPv4 policies
 
 ## action: 'test connectivity'
 
 Validate the asset configuration for connectivity
 
-Type: **test** \
+Type: **test** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -230,7 +230,7 @@ No Output
 
 Block an IP
 
-Type: **contain** \
+Type: **contain** <br>
 Read only: **False**
 
 The action supports the following format for the <b>ip</b> parameter:<ul><li>Simple IP: For example 123.123.123.123</li><li>IP, Subnet mask: 123.123.0.0 255.255.0.0</li><li>CIDR Notation: 123.123.0.0/16</li></ul>This action uses a multistep approach to block IP:<ul><li>Create an address entry named '<b>Phantom Addr [ip_address]\_[net_bits]</b>' if address not present, else directly configure address as the destination.</li><li>Configure the address entered as the <i>destination</i> of the specified <b>policy name if the policy exists. If the policy does not exist, action returns an error- Policy probably does not exist in the given virtual domain.</b>.</li><li>The <b>policy</b> value expected is the IPv4 policy name.</li></ul>The action will fail if:<ul><li>The policy name is not found. The action does not create a policy but edits it.</li><li>Policy action is not a <b>deny</b>.</li><li>Another value other than policy name is given as the <b>policy</b> such as policy ID.</li><li>The policy name is not IPv4 policy.</li></ul>
@@ -263,7 +263,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Unblock an IP
 
-Type: **correct** \
+Type: **correct** <br>
 Read only: **False**
 
 The action supports the following format for the <b>ip</b> parameter:<ul><li>Simple IP: For example 123.123.123.123</li><li>IP, Subnet mask: 123.123.0.0 255.255.0.0</li><li>CIDR Notation: 123.123.0.0/16</li></ul>This action uses a multistep approach to unblock IP:<ul><li>Re-configure the <b>policy</b> by removing the Address entry from the list of entries in the destination. If the Address entry is not present in the list of entries in the destination, action will return successfully with message- IP is already unblocked.</li><li>The action does <i>not</i> delete the address entry from the system.</li><li>If address entry is not found on the system, action will return an error- Address does not exist.</li><li>If the policy name is not found, action will return an error.</li><li>The action will validate the Address entry name, and therefore will only unblock IPs that are added by the <b>block ip</b> action.</li><li>If the policy name is not IPv4 policy, action will return an error.</li></ul>
@@ -296,7 +296,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 List configured IPv4 policies
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 #### Action Parameters
