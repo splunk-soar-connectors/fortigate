@@ -1,7 +1,7 @@
 # FortiGate
 
 Publisher: Splunk <br>
-Connector Version: 2.2.3 <br>
+Connector Version: 2.2.4 <br>
 Product Vendor: Fortinet <br>
 Product Name: FortiGate <br>
 Minimum Product Version: 6.2.1
