@@ -5,7 +5,7 @@
     "publisher": "Splunk",
     "package_name": "phantom_fortigate",
     "type": "firewall",
-    "license": "Copyright (c) 2017-2025 Splunk Inc.",
+    "license": "Copyright (c) 2017-2026 Splunk Inc.",
     "main_module": "fortigate_connector.py",
     "app_version": "2.2.4",
     "utctime_updated": "2025-09-05T16:33:13.841973Z",

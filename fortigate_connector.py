@@ -1,6 +1,6 @@
 # File: fortigate_connector.py
 #
-# Copyright (c) 2017-2025 Splunk Inc.
+# Copyright (c) 2017-2026 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -455,11 +455,9 @@ class FortiGateConnector(BaseConnector):
         rest_res = None
 
         if self._api_key:
-            if params:
-                params.update({"access_token": self._api_key})
-            else:
-                params = dict()
-                params.update({"access_token": self._api_key})
+            if headers is None:
+                headers = dict()
+            headers.update({"Authorization": f"Bearer {self._api_key}"})
 
         # get, post or put, whatever the caller asked us to use,
         # if not specified the default will be 'get'
@@ -483,7 +481,7 @@ class FortiGateConnector(BaseConnector):
 
         # Make the call
         try:
-            response = request_func(url, params=params, data=data, verify=self._verify_server_cert, timeout=(15, 27))
+            response = request_func(url, params=params, data=data, headers=headers, verify=self._verify_server_cert, timeout=(15, 27))
         except Exception as e:
             error_message = self._get_error_message_from_exception(e)
             return action_result.set_status(phantom.APP_ERROR, f"Error Connecting to server.{error_message}"), rest_res
@@ -543,7 +541,7 @@ class FortiGateConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
         self.save_progress(FORTIGATE_TEST_CONNECTIVITY_MESSAGE)
         self.save_progress(f"Configured URL: {self._device}")
-
+        self.save_progress(f"connectiing via bearer token")
         if not self._api_key:
             ret_val = self._login(action_result)
 
