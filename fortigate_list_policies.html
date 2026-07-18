@@ -105,7 +105,7 @@
               <tr>
                 <td>
                   <a href="javascript:;"
-                     onclick="context_menu(this, [{'contains': ['fortigate policy'], 'value': '{{ d.name }}' }], 0, {{ container.id }}, null, false);">
+                     onclick="context_menu(this, [{'contains': ['fortigate policy'], 'value': '{{ d.name|escapejs }}' }], 0, {{ container.id }}, null, false);">
                     {{ d.name }}
                     <span class="fa fa-caret-down" style="font-size: smaller;"></span>
                   </a>
