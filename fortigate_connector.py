@@ -883,6 +883,9 @@ class FortiGateConnector(BaseConnector):
             self.debug_print(FORTIGATE_INVALID_POLICY_DENY)
             return action_result.set_status(phantom.APP_ERROR, FORTIGATE_INVALID_POLICY_DENY), None
 
+        if policy.get("status") != "enable":
+            return action_result.set_status(phantom.APP_ERROR, "Policy is disabled and does not block traffic"), None
+
         # If policy action is deny, store policy id
         return phantom.APP_SUCCESS, policy_id
 
