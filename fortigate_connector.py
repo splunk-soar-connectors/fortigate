@@ -83,7 +83,7 @@ class FortiGateConnector(BaseConnector):
         self._api_password = config.get(FORTIGATE_JSON_PASSWORD)
         self._api_key = config.get(FORTIGATE_JSON_API_KEY)
         self._api_vdom = config.get(FORTIGATE_JSON_VDOM, "")
-        self._verify_server_cert = config.get(FORTIGATE_JSON_VERIFY_SERVER_CERT, False)
+        self._verify_server_cert = config.get(FORTIGATE_JSON_VERIFY_SERVER_CERT, True)
         self.set_validator("ip", self._is_ip)
 
         self._device = config[FORTIGATE_JSON_URL]

@@ -7,8 +7,9 @@ application. Below are the explanation and usage of all those parameters.
 - **Username -** The username used for authentication.
 - **Password -** The password used for authentication.
 - **API Key -** The API Key used for authentication.
-- **Verify server certificate -** Enable or disable verify SSL certificates for HTTPS requests.
-  The default value is false.
+- **Verify server certificate -** Enable or disable verification of TLS certificates for HTTPS
+  requests. Verification is enabled by default; disable it only after explicitly accepting the
+  man-in-the-middle risk.
 - **Virtual domain (VDOM) -** It specifies the virtual domain to be used. It is an optional
   parameter. If no virtual domain is provided, it will use the one provided in the action
   parameters. And, if the virtual domain is not provided in the asset or action parameters, it
