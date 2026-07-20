@@ -28,7 +28,7 @@
             "description": "Device URL for e.g. https://myforti.contoso.com"
         },
         "verify_server_cert": {
-            "default": false,
+            "default": true,
             "description": "Verify server certificate",
             "data_type": "boolean",
             "order": 1

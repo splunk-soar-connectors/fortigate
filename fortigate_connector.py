@@ -83,7 +83,7 @@ class FortiGateConnector(BaseConnector):
         self._api_password = config.get(FORTIGATE_JSON_PASSWORD)
         self._api_key = config.get(FORTIGATE_JSON_API_KEY)
         self._api_vdom = config.get(FORTIGATE_JSON_VDOM, "")
-        self._verify_server_cert = config.get(FORTIGATE_JSON_VERIFY_SERVER_CERT, False)
+        self._verify_server_cert = config.get(FORTIGATE_JSON_VERIFY_SERVER_CERT, True)
         self.set_validator("ip", self._is_ip)
 
         self._device = config[FORTIGATE_JSON_URL]
@@ -435,6 +435,10 @@ class FortiGateConnector(BaseConnector):
 
         # Please specify the status codes here
         if 200 <= status_code < 399:
+            fortios_status = resp_json.get("status")
+            if fortios_status and str(fortios_status).lower() != "success":
+                detail = resp_json.get("error") or resp_json.get("http_status") or "FortiOS reported an unsuccessful operation"
+                return RetVal(action_result.set_status(phantom.APP_ERROR, f"FortiOS API error: {detail}"), resp_json)
             return RetVal(phantom.APP_SUCCESS, resp_json)
 
         if resp_json.get("error") or resp_json.get("error_description"):
@@ -664,6 +668,12 @@ class FortiGateConnector(BaseConnector):
         if not response:
             return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE)
 
+        addr_status, address_blocked = self._is_address_blocked(ip_addr_obj_name, address_type, policy_id, vdom, action_result)
+        if phantom.is_fail(addr_status):
+            return action_result.get_status()
+        if not address_blocked:
+            return action_result.set_status(phantom.APP_ERROR, "FortiGate did not add the address to the deny policy")
+
         return action_result.set_status(phantom.APP_SUCCESS, FORTIGATE_IP_BLOCKED)
 
     # Unblock IP address
@@ -748,6 +758,12 @@ class FortiGateConnector(BaseConnector):
 
         if not response:
             return action_result.set_status(phantom.APP_ERROR, FORTIGATE_UNEXPECTED_SERVER_RESPONSE)
+
+        addr_status, address_blocked = self._is_address_blocked(ip_addr_obj_name, address_type, policy_id, vdom, action_result)
+        if phantom.is_fail(addr_status):
+            return action_result.get_status()
+        if address_blocked:
+            return action_result.set_status(phantom.APP_ERROR, "FortiGate did not remove the address from the deny policy")
 
         # Blocked Successfully
         return action_result.set_status(phantom.APP_SUCCESS, FORTIGATE_IP_UNBLOCKED)
@@ -867,6 +883,9 @@ class FortiGateConnector(BaseConnector):
             self.debug_print(FORTIGATE_INVALID_POLICY_DENY)
             return action_result.set_status(phantom.APP_ERROR, FORTIGATE_INVALID_POLICY_DENY), None
 
+        if policy.get("status") != "enable":
+            return action_result.set_status(phantom.APP_ERROR, "Policy is disabled and does not block traffic"), None
+
         # If policy action is deny, store policy id
         return phantom.APP_SUCCESS, policy_id
 
@@ -915,11 +934,6 @@ class FortiGateConnector(BaseConnector):
 
         # Check if resource not available, its an failure scenario
         if json_resp.get("resource_not_available"):
-            if self.get_action_identifier() == "unblock_ip":
-                self.debug_print(FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MESSAGE)
-                return action_result.set_status(phantom.APP_ERROR, FORTIGATE_REST_RESP_RESOURCE_NOT_FOUND_MESSAGE), address_blocked
-
-            # For block ip, if resource not available indicates that address is not blocked
             address_blocked = False
             return phantom.APP_SUCCESS, address_blocked
 
